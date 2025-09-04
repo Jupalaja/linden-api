@@ -106,3 +106,32 @@ def is_condition_treated(is_treated: bool) -> bool:
 def user_accepts_book_call(user_accepts: bool):
     """Use this tool to determine if the user accepts a book call, if the user accepts return True, otherwise return False"""
     return user_accepts
+
+
+# Special functions (mocked for now)
+def save_to_mailing_list() -> str:
+    return "save_to_mailing_list"
+
+
+def send_book_call_link() -> str:
+    return "send_book_call_link"
+
+
+def send_doctor_information() -> str:
+    return "send_doctor_information"
+
+
+def send_event_information() -> str:
+    return "send_event_information"
+
+
+def send_faq_information() -> str:
+    return "send_faq_information"
+
+
+def send_information_about_condition() -> str:
+    return "send_information_about_condition"
+
+
+def send_user_data_form() -> str:
+    return "send_user_data_form"
