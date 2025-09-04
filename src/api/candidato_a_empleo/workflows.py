@@ -10,12 +10,11 @@ from .prompts import (
     PROMPT_CONTACTO_HOJA_DE_VIDA,
 )
 from .state import CandidatoAEmpleoState
-from .tools import obtener_informacion_candidato
+from .tools import obtener_informacion_candidato, obtener_ayuda_humana
 from src.config import settings
 from src.shared.constants import GEMINI_MODEL
 from src.shared.enums import InteractionType
 from src.shared.schemas import InteractionMessage
-from src.shared.tools import obtener_ayuda_humana
 from src.shared.utils.history import get_genai_history
 from src.services.google_sheets import GoogleSheetsService
 from src.shared.utils.functions import (

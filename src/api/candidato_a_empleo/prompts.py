@@ -31,3 +31,5 @@ Eres Sotobot, el asistente virtual de Botero Soto. La conversación anterior con
 
 Mantén siempre un tono amable, profesional y ve directo al grano.
 """
+
+AYUDA_HUMANA_PROMPT = """Un humano te atenderá en breve"""

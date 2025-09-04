@@ -4,17 +4,13 @@ from typing import Optional, Any
 import google.genai as genai
 
 from src.shared.state import GlobalState
-from .prompts import CANDIDATO_A_EMPLEO_AUTOPILOT_SYSTEM_PROMPT
+from .tools import obtener_ayuda_humana
 from .state import CandidatoAEmpleoState
 from .workflows import (
     handle_in_progress_candidato_a_empleo
 )
 from src.services.google_sheets import GoogleSheetsService
 from src.shared.schemas import InteractionMessage
-from src.shared.utils.functions import (
-    handle_conversation_finished,
-)
-from src.shared.tools import obtener_ayuda_humana
 from src.shared.enums import InteractionType
 
 logger = logging.getLogger(__name__)
@@ -33,14 +29,6 @@ async def handle_candidato_a_empleo(
 
     interaction_data = dict(interaction_data) if interaction_data else {}
 
-    if current_state == CandidatoAEmpleoState.CONVERSATION_FINISHED:
-        return await handle_conversation_finished(
-            session_id=session_id,
-            history_messages=history_messages,
-            interaction_data=interaction_data,
-            client=client,
-            autopilot_system_prompt=CANDIDATO_A_EMPLEO_AUTOPILOT_SYSTEM_PROMPT,
-        )
 
     if current_state == CandidatoAEmpleoState.AWAITING_CANDIDATE_INFO:
         return await handle_in_progress_candidato_a_empleo(

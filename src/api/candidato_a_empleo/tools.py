@@ -1,4 +1,5 @@
 from typing import Optional
+from src.api.candidato_a_empleo.prompts import AYUDA_HUMANA_PROMPT
 
 
 def obtener_informacion_candidato(
@@ -9,3 +10,7 @@ def obtener_informacion_candidato(
     El modelo debe preguntar por esta información en el orden: nombre, cédula y vacante.
     """
     return {k: v for k, v in locals().items() if v is not None}
+
+def obtener_ayuda_humana():
+    """Utiliza esta función cuando el usuario solicite explícitamente ayuda humana o hablar con un humano."""
+    return AYUDA_HUMANA_PROMPT
