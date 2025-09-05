@@ -97,8 +97,13 @@ def send_book_call_link() -> str:
     return "Here's the bool call link: https://bookinglink.com/"
 
 
-def send_doctor_information() -> str:
-    """Use this tool to provide information about the doctors, their availability, and location.
+def send_user_data_form() -> str:
+    """Use this tool to send a form to the user to collect their data."""
+    return "send_user_data_form"
+
+
+def send_doctor_information(best_doctor_for_client:str) -> str:
+    """Use this tool to let the customer know what doctor is better for their necessity, their availability, and location.
     
     Doctors:
     - Dr. Jeffrey
@@ -112,17 +117,7 @@ def send_doctor_information() -> str:
     - Both doctors see patients residing in NH, ME, MA, or CT.
     - Dr. Silva also sees California residents via telehealth.
     """
-    return """Doctors:
-- Dr. Jeffrey
-- Dr. Silva
-
-Availability:
-- In-Person (Whole Life Healthcare – 100 Shattuck Way, Newington, NH): Starting August 1st, Tuesday–Friday, 8:00 AM – 5:00 PM. Dr. Jeffrey and Dr. Silva will each be available for in-person visits two days per week, or in alternating shifts (AM/PM).
-- Telehealth: Tuesday–Friday, 9:00 AM – 5:00 PM (with evening appointments available Thursdays until 7:00 PM with Dr. Jeffrey).
-
-Service Area:
-- Both doctors see patients residing in NH, ME, MA, or CT.
-- Dr. Silva also sees California residents via telehealth."""
+    return best_doctor_for_client
 
 
 def send_event_information() -> str:
@@ -321,8 +316,3 @@ def send_information_about_condition() -> str:
     - **Primary immunodeficiency disorders** – Such as SCID or CVID
     """
     return CONDITIONS_DATA
-
-
-def send_user_data_form() -> str:
-    """Use this tool to send a form to the user to collect their data."""
-    return "send_user_data_form"
