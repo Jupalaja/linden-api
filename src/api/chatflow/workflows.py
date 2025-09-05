@@ -171,7 +171,15 @@ async def out_of_scope_workflow(
     client: genai.Client,
     sheets_service: Optional[GoogleSheetsService],
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
-    return [], ChatflowState.BOOK_CALL_NOT_OFFERED_YET, None, interaction_data
+    response_text, _, _, _ = await _get_response(
+        history_messages, client, [], CHATFLOW_SYSTEM_PROMPT
+    )
+    return (
+        [InteractionMessage(role=InteractionType.MODEL, message=response_text)],
+        ChatflowState.REQUEST_RESOLVED_AWAIT_NEW_MESSAGE,
+        None,
+        interaction_data,
+    )
 
 
 async def recommended_doctor_workflow(

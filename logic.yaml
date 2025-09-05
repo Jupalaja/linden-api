@@ -80,7 +80,7 @@ graph:
       message: "$PROMPT_FRUSTRATED_CUSTOMER_OFFER_BOOK_CALL"
       next: "BOOK_CALL_NOT_OFFERED_YET"
     - id: "INTENT_OUT_OF_SCOPE_QUESTION"
-      next: "BOOK_CALL_NOT_OFFERED_YET"
+      next: "CONDITION_NOT_TREATED_SEND_CONTACT_INFO"
     - id: "RECOMMENDED_DOCTOR"
       action: "use_special_function"
       function_name: "send_doctor_information"
