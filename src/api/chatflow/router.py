@@ -60,7 +60,7 @@ async def handle(
         interaction = Interaction(
             session_id=session_id,
             messages=[],
-            states=[current_state.value],
+            states=[ChatflowState.IDLE.value],
             interaction_data=interaction_data,
             user_data=user_data,
         )
@@ -102,5 +102,5 @@ async def handle(
         sessionId=session_id,
         messages=response_messages,
         toolCall=tool_call,
-        state=new_state.value,
+        states=interaction.states,
     )
