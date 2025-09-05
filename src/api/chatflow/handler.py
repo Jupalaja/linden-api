@@ -18,7 +18,7 @@ async def handle_chatflow(
         ChatflowState.CLASSIFYING_INTENT: intent_classification_workflow,
         ChatflowState.INTENT_QUESTION_CONDITION: question_condition_workflow,
         ChatflowState.PROVIDE_CONDITION_INFORMATION: provide_condition_information_workflow,
-        ChatflowState.INTENT_POTENTIAL_PATIENT: potential_patient_workflow,
+
         ChatflowState.INTENT_FRUSTRATED_CUSTOMER: frustrated_customer_workflow,
         ChatflowState.INTENT_OUT_OF_SCOPE_QUESTION: out_of_scope_workflow,
         ChatflowState.RECOMMENDED_DOCTOR: recommended_doctor_workflow,
@@ -41,6 +41,7 @@ async def handle_chatflow(
         ChatflowState.CONVERSATION_FINISHED_OFFER_NEWSLETTER: conversation_finished_workflow,
         ChatflowState.AWAITING_NEWSLETTER_RESPONSE: await_newsletter_response_workflow,
         ChatflowState.MAILING_LIST_OFFER_ACCEPTED: mailing_list_accepted_workflow,
+        ChatflowState.FINAL_STATE: final_state_workflow,
     }
 
     # Prepending introduction message for new conversations

@@ -34,7 +34,7 @@ async def intent_classification_workflow(
 
     state_map = {
         "is_emergency": ChatflowState.INVALID_REQUEST_EMERGENCY,
-        "is_potential_patient": ChatflowState.INTENT_POTENTIAL_PATIENT,
+        "is_potential_patient": ChatflowState.BOOK_CALL_NOT_OFFERED_YET,
         "is_question_about_condition": ChatflowState.INTENT_QUESTION_CONDITION,
         "is_question_event": ChatflowState.INTENT_EVENT_QUESTION,
         "is_frequently_asked_question": ChatflowState.INTENT_FAQ,
@@ -81,14 +81,6 @@ async def provide_condition_information_workflow(
     )
 
 
-async def potential_patient_workflow(
-    history_messages: list[InteractionMessage],
-    interaction_data: dict,
-    client: genai.Client,
-) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
-    return [], ChatflowState.BOOK_CALL_NOT_OFFERED_YET, None, interaction_data
-
-
 async def frustrated_customer_workflow(
     history_messages: list[InteractionMessage],
     interaction_data: dict,
@@ -96,7 +88,7 @@ async def frustrated_customer_workflow(
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
     return await _send_message(
         PROMPT_FRUSTRATED_CUSTOMER_OFFER_BOOK_CALL,
-        ChatflowState.BOOK_CALL_NOT_OFFERED_YET,
+        ChatflowState.OFFER_BOOK_CALL,
         interaction_data,
     )
 
@@ -106,13 +98,9 @@ async def out_of_scope_workflow(
     interaction_data: dict,
     client: genai.Client,
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
-    response_text = await generate_response_text(
-        history_messages, client, CHATFLOW_SYSTEM_PROMPT
-    )
-    return (
-        [InteractionMessage(role=InteractionType.MODEL, message=response_text)],
-        ChatflowState.REQUEST_RESOLVED_AWAIT_NEW_MESSAGE,
-        None,
+    return await _send_message(
+        PROMPT_OUT_OF_SCOPE_QUESTION,
+        ChatflowState.OFFER_BOOK_CALL,
         interaction_data,
     )
 
@@ -122,9 +110,10 @@ async def recommended_doctor_workflow(
     interaction_data: dict,
     client: genai.Client,
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
-    response_text = await generate_response_text(
-        history_messages, client, CHATFLOW_SYSTEM_PROMPT
+    tool_results = await call_single_tool(
+        history_messages, client, send_doctor_information, CHATFLOW_SYSTEM_PROMPT
     )
+    response_text = tool_results.get("send_doctor_information", "Our doctors would be happy to help with your condition.")
     return (
         [InteractionMessage(role=InteractionType.MODEL, message=response_text)],
         ChatflowState.BOOK_CALL_NOT_OFFERED_YET,
@@ -139,7 +128,7 @@ async def customer_acknowledges_workflow(
     client: genai.Client,
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
     return await _send_message(
-        ACKNOWLEDGMENT_MESSAGE, ChatflowState.BOOK_CALL_NOT_OFFERED_YET, interaction_data
+        ACKNOWLEDGMENT_MESSAGE, ChatflowState.REQUEST_RESOLVED_AWAIT_NEW_MESSAGE, interaction_data
     )
 
 
@@ -378,7 +367,7 @@ async def await_newsletter_response_workflow(
         return [], ChatflowState.MAILING_LIST_OFFER_ACCEPTED, None, interaction_data
 
     # If user declines, we can end the conversation.
-    return [], ChatflowState.IDLE, None, interaction_data
+    return [], ChatflowState.FINAL_STATE, None, interaction_data
 
 
 async def mailing_list_accepted_workflow(
@@ -394,7 +383,19 @@ async def mailing_list_accepted_workflow(
     # After saving, conversation can be considered idle/ended
     return (
         [InteractionMessage(role=InteractionType.MODEL, message=response_text)],
-        ChatflowState.IDLE,
+        ChatflowState.FINAL_STATE,
         None,
+        interaction_data,
+    )
+
+
+async def final_state_workflow(
+    history_messages: list[InteractionMessage],
+    interaction_data: dict,
+    client: genai.Client,
+) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
+    return await _send_message(
+        PROMPT_FAREWELL_MESSAGE,
+        ChatflowState.IDLE,
         interaction_data,
     )
