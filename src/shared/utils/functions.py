@@ -107,7 +107,7 @@ async def call_single_tool(
         tool_results = {}
 
         # Extract tool calls and results
-        if response.candidates and response.candidates[0].content.parts:
+        if response.candidates and response.candidates[0].content and response.candidates[0].content.parts:
             for part in response.candidates[0].content.parts:
                 if hasattr(part, 'function_call') and part.function_call:
                     func_name = part.function_call.name
@@ -175,7 +175,7 @@ async def generate_response_text(
             config=config
         )
 
-        if response.candidates and response.candidates[0].content.parts:
+        if response.candidates and response.candidates[0].content and response.candidates[0].content.parts:
             # Extract text from the response
             text_parts = []
             for part in response.candidates[0].content.parts:
