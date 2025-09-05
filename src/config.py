@@ -44,7 +44,6 @@ class Settings(BaseSettings):
     GOOGLE_SA_CLIENT_X509_CERT_URL: str
 
     # Google Sheets
-    GOOGLE_SHEET_ID_CLIENTES_POTENCIALES: Optional[str] = None
     GOOGLE_SHEET_ID_EXPORT: Optional[str] = None
 
     # Google GenAI
@@ -55,12 +54,6 @@ class Settings(BaseSettings):
 
     # Google Storage
     BUCKET_URL: Optional[str] = None
-
-    # WhatsApp API
-    SECRET_PATH: str
-    WHATSAPP_SERVER_URL: Optional[str] = None
-    WHATSAPP_SERVER_API_KEY: Optional[str] = None
-    WHATSAPP_SERVER_INSTANCE_NAME: Optional[str] = None
 
     @field_validator("DATABASE_URL", mode="before")
     @classmethod
