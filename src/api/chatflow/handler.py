@@ -1,5 +1,4 @@
 from .workflows import *
-from src.services.google_sheets import GoogleSheetsService
 from src.shared.enums import InteractionType
 from src.shared.schemas import InteractionMessage
 
@@ -12,7 +11,6 @@ async def handle_chatflow(
     current_state: ChatflowState,
     interaction_data: Optional[dict],
     client: genai.Client,
-    sheets_service: Optional[GoogleSheetsService],
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
     interaction_data = dict(interaction_data) if interaction_data else {}
 
@@ -68,7 +66,7 @@ async def handle_chatflow(
         current_turn_history = history_messages + all_new_messages
 
         new_messages, new_state, tool_call, interaction_data = await workflow_func(
-            current_turn_history, interaction_data, client, sheets_service
+            current_turn_history, interaction_data, client
         )
 
         if new_messages:

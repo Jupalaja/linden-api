@@ -80,7 +80,6 @@ async def handle(
         current_state=current_state,
         interaction_data=interaction_data,
         client=client,
-        sheets_service=sheets_service,
     )
 
     # Update history with new messages from the handler

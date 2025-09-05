@@ -10,46 +10,9 @@ from .tools import *
 from src.config import settings
 from src.shared.enums import InteractionType
 from src.shared.schemas import InteractionMessage
-from src.services.google_sheets import GoogleSheetsService
 from src.shared.utils.functions import execute_tool_calls_and_get_response
 
 logger = logging.getLogger(__name__)
-
-
-async def _write_chatflow_to_sheet(
-    interaction_data: dict, sheets_service: Optional[GoogleSheetsService]
-):
-    if interaction_data.get("sheet_row_added"):
-        logger.info(
-            "Data for job candidate has already been written to Google Sheet. Skipping."
-        )
-        return
-
-    if not settings.GOOGLE_SHEET_ID_EXPORT or not sheets_service:
-        logger.warning(
-            "Spreadsheet ID for export not configured or sheets service not available. Skipping write."
-        )
-        return
-
-    try:
-        worksheet = sheets_service.get_worksheet(
-            spreadsheet_id=settings.GOOGLE_SHEET_ID_EXPORT,
-            worksheet_name="data",
-        )
-        if not worksheet:
-            logger.error("Could not find data worksheet.")
-            return
-
-        row_to_append = []
-
-        sheets_service.append_row(worksheet, row_to_append)
-        interaction_data["sheet_row_added"] = True
-        logger.info(
-            "Successfully wrote data for job candidate to Google Sheet and marked as added."
-        )
-
-    except Exception as e:
-        logger.error(f"Failed to write to Google Sheet: {e}", exc_info=True)
 
 async def _get_response(
     history_messages: list[InteractionMessage],
@@ -81,7 +44,6 @@ async def intent_classification_workflow(
     history_messages: list[InteractionMessage],
     interaction_data: dict,
     client: genai.Client,
-    sheets_service: Optional[GoogleSheetsService],
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
     tools_to_use = [classify_intent]
     _, tool_results, _, _ = await _get_response(
@@ -109,7 +71,6 @@ async def question_condition_workflow(
     history_messages: list[InteractionMessage],
     interaction_data: dict,
     client: genai.Client,
-    sheets_service: Optional[GoogleSheetsService],
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
     tools_to_use = [is_condition_treated]
     _, tool_results, _, _ = await _get_response(
@@ -128,7 +89,6 @@ async def provide_condition_information_workflow(
     history_messages: list[InteractionMessage],
     interaction_data: dict,
     client: genai.Client,
-    sheets_service: Optional[GoogleSheetsService],
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
     response_text, _, _, _ = await _get_response(
         history_messages, client, [], CHATFLOW_SYSTEM_PROMPT, context=CONDITIONS_DATA
@@ -145,7 +105,6 @@ async def potential_patient_workflow(
     history_messages: list[InteractionMessage],
     interaction_data: dict,
     client: genai.Client,
-    sheets_service: Optional[GoogleSheetsService],
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
     return [], ChatflowState.BOOK_CALL_NOT_OFFERED_YET, None, interaction_data
 
@@ -154,7 +113,6 @@ async def frustrated_customer_workflow(
     history_messages: list[InteractionMessage],
     interaction_data: dict,
     client: genai.Client,
-    sheets_service: Optional[GoogleSheetsService],
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
     return await _send_message(
         PROMPT_FRUSTRATED_CUSTOMER_OFFER_BOOK_CALL,
@@ -167,7 +125,6 @@ async def out_of_scope_workflow(
     history_messages: list[InteractionMessage],
     interaction_data: dict,
     client: genai.Client,
-    sheets_service: Optional[GoogleSheetsService],
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
     response_text, _, _, _ = await _get_response(
         history_messages, client, [], CHATFLOW_SYSTEM_PROMPT
@@ -184,7 +141,6 @@ async def recommended_doctor_workflow(
     history_messages: list[InteractionMessage],
     interaction_data: dict,
     client: genai.Client,
-    sheets_service: Optional[GoogleSheetsService],
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
     tools_to_use = [send_doctor_information]
     response_text, _, _, _ = await _get_response(
@@ -202,7 +158,6 @@ async def customer_acknowledges_workflow(
     history_messages: list[InteractionMessage],
     interaction_data: dict,
     client: genai.Client,
-    sheets_service: Optional[GoogleSheetsService],
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
     return await _send_message(
         ACKNOWLEDGMENT_MESSAGE, ChatflowState.BOOK_CALL_NOT_OFFERED_YET, interaction_data
@@ -213,7 +168,6 @@ async def faq_workflow(
     history_messages: list[InteractionMessage],
     interaction_data: dict,
     client: genai.Client,
-    sheets_service: Optional[GoogleSheetsService],
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
     tools_to_use = [classify_faq]
     _, tool_results, _, _ = await _get_response(
@@ -238,7 +192,6 @@ async def ask_state_workflow(
     history_messages: list[InteractionMessage],
     interaction_data: dict,
     client: genai.Client,
-    sheets_service: Optional[GoogleSheetsService],
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
     return await _send_message(PROMPT_ASK_STATE, ChatflowState.ASKED_STATE, interaction_data)
 
@@ -247,7 +200,6 @@ async def condition_not_treated_workflow(
     history_messages: list[InteractionMessage],
     interaction_data: dict,
     client: genai.Client,
-    sheets_service: Optional[GoogleSheetsService],
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
     return await _send_message(
         PROMPT_CONDITION_NOT_TREATED,
@@ -260,7 +212,6 @@ async def event_question_workflow(
     history_messages: list[InteractionMessage],
     interaction_data: dict,
     client: genai.Client,
-    sheets_service: Optional[GoogleSheetsService],
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
     response_text, _, _, _ = await _get_response(
         history_messages,
@@ -281,7 +232,6 @@ async def provided_faq_workflow(
     history_messages: list[InteractionMessage],
     interaction_data: dict,
     client: genai.Client,
-    sheets_service: Optional[GoogleSheetsService],
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
     response_text, _, _, _ = await _get_response(
         history_messages, client, [], CHATFLOW_SYSTEM_PROMPT, context=FAQ_DATA
@@ -298,7 +248,6 @@ async def emergency_workflow(
     history_messages: list[InteractionMessage],
     interaction_data: dict,
     client: genai.Client,
-    sheets_service: Optional[GoogleSheetsService],
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
     return await _send_message(
         OUTPUT_MESSAGE_EMERGENCY,
@@ -311,7 +260,6 @@ async def answer_insurance_workflow(
     history_messages: list[InteractionMessage],
     interaction_data: dict,
     client: genai.Client,
-    sheets_service: Optional[GoogleSheetsService],
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
     return await _send_message(
         PROMPT_QUESTION_INSURANCE,
@@ -324,7 +272,6 @@ async def answer_pricey_service_workflow(
     history_messages: list[InteractionMessage],
     interaction_data: dict,
     client: genai.Client,
-    sheets_service: Optional[GoogleSheetsService],
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
     return await _send_message(
         PROMPT_QUESTION_PRICEY_SERVICE,
@@ -337,7 +284,6 @@ async def answer_in_person_workflow(
     history_messages: list[InteractionMessage],
     interaction_data: dict,
     client: genai.Client,
-    sheets_service: Optional[GoogleSheetsService],
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
     return await _send_message(
         PROMPT_QUESTION_IN_PERSON,
@@ -350,7 +296,6 @@ async def validate_state_workflow(
     history_messages: list[InteractionMessage],
     interaction_data: dict,
     client: genai.Client,
-    sheets_service: Optional[GoogleSheetsService],
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
     tools_to_use = [is_valid_state]
     _, tool_results, _, _ = await _get_response(
@@ -372,7 +317,6 @@ async def offer_book_call_workflow(
     history_messages: list[InteractionMessage],
     interaction_data: dict,
     client: genai.Client,
-    sheets_service: Optional[GoogleSheetsService],
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
     return await _send_message(
         PROMPT_OFFER_BOOK_CALL, ChatflowState.SENT_BOOK_CALL_OFFER, interaction_data
@@ -383,7 +327,6 @@ async def request_resolved_workflow(
     history_messages: list[InteractionMessage],
     interaction_data: dict,
     client: genai.Client,
-    sheets_service: Optional[GoogleSheetsService],
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
     # This state loops back to intent classification for a new user query
     return [], ChatflowState.CLASSIFYING_INTENT, None, interaction_data
@@ -393,7 +336,6 @@ async def sent_book_call_offer_workflow(
     history_messages: list[InteractionMessage],
     interaction_data: dict,
     client: genai.Client,
-    sheets_service: Optional[GoogleSheetsService],
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
     tools_to_use = [user_accepts_book_call]
     _, tool_results, _, _ = await _get_response(
@@ -412,7 +354,6 @@ async def book_call_declined_workflow(
     history_messages: list[InteractionMessage],
     interaction_data: dict,
     client: genai.Client,
-    sheets_service: Optional[GoogleSheetsService],
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
     return await _send_message(
         PROMPT_PROVIDE_CONTACT_INFO, ChatflowState.CONVERSATION_FINISHED, interaction_data
@@ -423,7 +364,6 @@ async def book_call_link_sent_workflow(
     history_messages: list[InteractionMessage],
     interaction_data: dict,
     client: genai.Client,
-    sheets_service: Optional[GoogleSheetsService],
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
     tools_to_use = [send_book_call_link]
     response_text, _, _, _ = await _get_response(
@@ -441,7 +381,6 @@ async def conversation_finished_workflow(
     history_messages: list[InteractionMessage],
     interaction_data: dict,
     client: genai.Client,
-    sheets_service: Optional[GoogleSheetsService],
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
     return await _send_message(
         PROMPT_OFFER_NEWSLETTER,
@@ -454,7 +393,6 @@ async def await_newsletter_response_workflow(
     history_messages: list[InteractionMessage],
     interaction_data: dict,
     client: genai.Client,
-    sheets_service: Optional[GoogleSheetsService],
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
     tools_to_use = [user_accepts_newsletter]
     _, tool_results, _, _ = await _get_response(
@@ -472,7 +410,6 @@ async def mailing_list_accepted_workflow(
     history_messages: list[InteractionMessage],
     interaction_data: dict,
     client: genai.Client,
-    sheets_service: Optional[GoogleSheetsService],
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
     tools_to_use = [save_to_mailing_list]
     response_text, _, _, _ = await _get_response(
