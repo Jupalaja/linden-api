@@ -28,13 +28,13 @@ logger = logging.getLogger(__name__)
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup
-    logger.info("Starting up application...")
+    logger.debug("Starting up application...")
     if not await test_db_connection():
         logger.warning(
             "Database connection could not be established on startup."
         )
     else:
-        logger.info("Database connection successful.")
+        logger.debug("Database connection successful.")
 
     app.state.genai_client = genai.Client(
         vertexai=settings.GOOGLE_GENAI_USE_VERTEXAI,
@@ -46,7 +46,7 @@ async def lifespan(app: FastAPI):
 
     try:
         app.state.sheets_service = GoogleSheetsService()
-        logger.info("Google Sheets Service initialized.")
+        logger.debug("Google Sheets Service initialized.")
     except Exception as e:
         logger.error(f"Failed to initialize Google Sheets Service: {e}")
         app.state.sheets_service = None
