@@ -49,6 +49,11 @@ def is_service_pricey():
     return PROMPT_QUESTION_PRICEY_SERVICE
 
 
+def is_general_faq_question(is_question_in_person: bool, is_question_insurance: bool, is_service_pricey: bool):
+    """This tool should return True if all the input values are false"""
+    return not (is_question_in_person or is_question_insurance or is_service_pricey)
+
+
 # Boolean toggle tools
 def is_condition_treated() -> bool:
     """Use this tool to identify if the condition provided by the user is treated or not, if the condition is treated return True, otherwise return False.
