@@ -21,7 +21,6 @@ variables:
 
 graph:
   id: "chatflow"
-
   nodes:
     - id: "start"
       action: "send_message"
@@ -54,13 +53,13 @@ graph:
       decision:
         state: "CLASSIFYING_INTENT"
         classify_intent:_is_emergency: "INVALID_REQUEST_EMERGENCY"
-        classify_intent:_is_potential_patient: "INTENT_POTENTIAL_PATIENT"
         classify_intent:_is_question_about_condition: "INTENT_QUESTION_CONDITION"
         classify_intent:_is_question_event: "INTENT_EVENT_QUESTION"
         classify_intent:_is_frequently_asked_question: "INTENT_FAQ"
         classify_intent:_is_out_of_scope_question: "INTENT_OUT_OF_SCOPE_QUESTION"
         classify_intent:_is_frustrated_needs_human: "INTENT_FRUSTRATED_CUSTOMER"
         classify_intent:_is_acknowledgment: "CUSTOMER_ACKNOWLEDGES_RESPONSE"
+        classify_intent:_is_potential_patient: "BOOK_CALL_NOT_OFFERED_YET"
     - id: "INTENT_FAQ"
       action: "use_tools"
       tools:
@@ -94,12 +93,6 @@ graph:
         state: "INTENT_QUESTION_CONDITION"
         is_condition_treated:_true: "PROVIDE_CONDITION_INFORMATION"
         is_condition_treated:_false: "CONDITION_NOT_TREATED_SEND_CONTACT_INFO"
-    - id: "INTENT_POTENTIAL_PATIENT"
-      action: "use_tools"
-      tools:
-        - name: "is_condition_treated"
-          type: "boolean-toggle"
-      next: "BOOK_CALL_NOT_OFFERED_YET"
     - id: "INVALID_REQUEST_EMERGENCY"
       action: "send_message"
       message: "$OUTPUT_MESSAGE_EMERGENCY"
