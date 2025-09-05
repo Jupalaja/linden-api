@@ -1,5 +1,8 @@
-from typing import Literal, List
+from typing import Literal
+
+from .knowledge_data import FAQ_DATA, EVENTS_DATA, CONDITIONS_DATA
 from .prompts import *
+
 ConversationType = Literal[
     "is_emergency",
     "is_potential_patient",
@@ -11,22 +14,17 @@ ConversationType = Literal[
     "is_acknowledgment",
 ]
 
-def classify_intent(
-    conversation_history: List[str]
-) -> ConversationType:
-    """
-    Analyzes the user's conversation and returns the single most relevant classification for the most recent message.
+
+def classify_intent(intent: ConversationType) -> ConversationType:
+    """Classifies the user's intent. Call this function with the most relevant classification.
 
     Args:
-        conversation_history: An ordered list of messages in the conversation, starting with the oldest.
-
-    Returns:
-        The single most appropriate category chosen from the ConversationType options.
+        intent: The user's intent.
     """
-    pass
+    return intent
 
 
-def is_valid_state(is_valid: bool):
+def is_valid_state(is_valid: bool) -> bool:
     """Use this tool to validate if the state where user resides in is a valid state to provide the service
 
     Aya Naturopathic Medicine offers services to NH, ME, MA, CT and CA
@@ -49,14 +47,14 @@ def is_service_pricey():
     return PROMPT_QUESTION_PRICEY_SERVICE
 
 
-def is_general_faq_question(is_question_in_person: bool, is_question_insurance: bool, is_service_pricey: bool):
+def is_general_faq_question(is_question_in_person: bool, is_question_insurance: bool, is_service_pricey: bool) -> bool:
     """This tool should return True if all the input values are false"""
     return not (is_question_in_person or is_question_insurance or is_service_pricey)
 
 
 # Boolean toggle tools
-def is_condition_treated() -> bool:
-    """Use this tool to identify if the condition provided by the user is treated or not, if the condition is treated return True, otherwise return False.
+def is_condition_treated(is_treated: bool) -> bool:
+    """Use this tool to identify if the condition provided by the user is treated or not. Set `is_treated` to True if the condition is treated, otherwise set to False.
 
     At Aya Naturopathic Medicine, we support a wide range of health concerns using a root-cause, systems-based approach. Our doctors work with patients of all ages (6+) and specialize in the following areas:
     - Women’s Health
@@ -77,15 +75,15 @@ def is_condition_treated() -> bool:
     - Severe psychiatric conditions
     - Primary immunodeficiency disorders
     """
-    pass
+    return is_treated
 
 
-def user_accepts_book_call(user_accepts: bool):
+def user_accepts_book_call(user_accepts: bool) -> bool:
     """Use this tool to determine if the user accepts a book call, if the user accepts return True, otherwise return False"""
     return user_accepts
 
 
-def user_accepts_newsletter(user_accepts: bool):
+def user_accepts_newsletter(user_accepts: bool) -> bool:
     """Use this tool to determine if the user accepts to be included in the newsletter mailing list, if the user accepts return True, otherwise return False"""
     return user_accepts
 
@@ -117,7 +115,17 @@ def send_doctor_information() -> str:
     - Both doctors see patients residing in NH, ME, MA, or CT.
     - Dr. Silva also sees California residents via telehealth.
     """
-    return "send_doctor_information"
+    return """Doctors:
+- Dr. Jeffrey
+- Dr. Silva
+
+Availability:
+- In-Person (Whole Life Healthcare – 100 Shattuck Way, Newington, NH): Starting August 1st, Tuesday–Friday, 8:00 AM – 5:00 PM. Dr. Jeffrey and Dr. Silva will each be available for in-person visits two days per week, or in alternating shifts (AM/PM).
+- Telehealth: Tuesday–Friday, 9:00 AM – 5:00 PM (with evening appointments available Thursdays until 7:00 PM with Dr. Jeffrey).
+
+Service Area:
+- Both doctors see patients residing in NH, ME, MA, or CT.
+- Dr. Silva also sees California residents via telehealth."""
 
 
 def send_event_information() -> str:
@@ -145,7 +153,7 @@ def send_event_information() -> str:
     - **Venue:** Whole Life Health Care  
     - **Price:** $150  
     """
-    pass
+    return EVENTS_DATA
 
 
 def send_faq_information() -> str:
@@ -274,7 +282,7 @@ def send_faq_information() -> str:
         - Credit cards
         - HSA/FSA cards
     """
-    pass
+    return FAQ_DATA
 
 
 def send_information_about_condition() -> str:
@@ -315,7 +323,7 @@ def send_information_about_condition() -> str:
     - **Severe psychiatric conditions** – Including schizophrenia or psychosis that requires close psychiatric supervision
     - **Primary immunodeficiency disorders** – Such as SCID or CVID
     """
-    pass
+    return CONDITIONS_DATA
 
 
 def send_user_data_form() -> str:

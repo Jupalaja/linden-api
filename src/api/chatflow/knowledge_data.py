@@ -1,5 +1,4 @@
-FAQ_DATA="""
-## Conditions Treated by Aya Naturopathic Medicine
+CONDITIONS_DATA = """## Conditions Treated by Aya Naturopathic Medicine
 At Aya Naturopathic Medicine, we support a wide range of health concerns using a root-cause, systems-based approach. Our doctors work with patients of all ages (6+) and specialize in the following areas:
 
 **Women’s Health**
@@ -32,9 +31,9 @@ We do not provide:
 - **Pediatrics under age 6** – We currently do not treat young children below age 6.
 - **Personality disorders, eating disorders, or unmanaged substance use**
 - **Severe psychiatric conditions** – Including schizophrenia or psychosis that requires close psychiatric supervision
-- **Primary immunodeficiency disorders** – Such as SCID or CVID
+- **Primary immunodeficiency disorders** – Such as SCID or CVID"""
 
-## Clinic Hours (For Linden’s Use)
+REST_OF_FAQ = """## Clinic Hours (For Linden’s Use)
 Aya Naturopathic Medicine offers both telehealth and in-person care, with schedules varying by doctor and day of the week.
 
 ### 🏥 In-Person Appointments (Whole Life Healthcare – 100 Shattuck Way, Newington, NH)
@@ -122,6 +121,8 @@ Plans typically keep monthly costs close to $100/month.
     - Credit cards
     - HSA/FSA cards
 """
+
+FAQ_DATA = f"{CONDITIONS_DATA}\n\n{REST_OF_FAQ}"
 
 
 EVENTS_DATA="""
