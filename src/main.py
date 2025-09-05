@@ -4,7 +4,6 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 import google.genai as genai
 
-from src.api.candidato_a_empleo.router import router as candidato_a_empleo_router
 from src.api.chatflow.router import router as chatflow_router
 from src.config import settings
 from src.database.db import engine, test_db_connection
@@ -60,7 +59,6 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title=settings.PROJECT_NAME, lifespan=lifespan)
 
-app.include_router(candidato_a_empleo_router, prefix="/api/v1", tags=["Candidato a Empleo"])
 app.include_router(chatflow_router, prefix="/api/v1", tags=["Chatflow"])
 
 
