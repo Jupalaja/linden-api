@@ -1,8 +1,5 @@
 from typing import Literal
 
-from .knowledge_data import FAQ_DATA, EVENTS_DATA, CONDITIONS_DATA
-from .prompts import *
-
 ConversationType = Literal[
     "is_emergency",
     "is_potential_patient",

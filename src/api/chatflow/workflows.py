@@ -4,6 +4,8 @@ from typing import Optional
 import google.genai as genai
 
 from .state import ChatflowState
+from .knowledge_data import *
+from .prompts import *
 from .tools import *
 from src.config import settings
 from src.shared.enums import InteractionType
