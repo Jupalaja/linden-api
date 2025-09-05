@@ -9,14 +9,11 @@ from .prompts import *
 from .state import ChatflowState
 from .tools import *
 from src.config import settings
-from src.shared.constants import GEMINI_MODEL
 from src.shared.enums import InteractionType
 from src.shared.schemas import InteractionMessage
 from src.shared.state import GlobalState
-from src.shared.utils.history import get_genai_history
 from src.services.google_sheets import GoogleSheetsService
 from src.shared.utils.functions import execute_tool_calls_and_get_response
-from src.shared.tools import obtener_ayuda_humana as shared_obtener_ayuda_humana
 
 logger = logging.getLogger(__name__)
 
@@ -258,10 +255,9 @@ async def run_chatflow_workflow(
             break
 
         else:
-            logger.warning(f"Unhandled state: {current_state}. Escalating to human.")
-            assistant_messages.append(InteractionMessage(role=InteractionType.MODEL, message=shared_obtener_ayuda_humana()))
+            logger.error(f"Unhandled state: {current_state}. Review state logic")
+            assistant_messages.append(InteractionMessage(role=InteractionType.MODEL, message="Could not determine flow"))
             next_state = GlobalState.HUMAN_ESCALATION
-            tool_call_name = "obtener_ayuda_humana"
             break
 
     return assistant_messages, next_state, tool_call_name, interaction_data

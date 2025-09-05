@@ -1,9 +1,9 @@
 from datetime import datetime, timezone
 
 from pydantic import BaseModel, Field
-from typing import List, Literal, Optional
+from typing import List, Optional
 
-from src.shared.enums import InteractionType, CategoriaClasificacion
+from src.shared.enums import InteractionType
 
 
 class ChatRequest(BaseModel):
@@ -38,31 +38,3 @@ class InteractionResponse(BaseModel):
     messages: List[InteractionMessage]
     toolCall: Optional[str] = None
     state: Optional[str] = None
-    classifiedAs: Optional[CategoriaClasificacion] = None
-
-
-CategoriaClasificacionLiteral = Literal[
-    "CLIENTE_POTENCIAL",
-    "CLIENTE_ACTIVO",
-    "TRANSPORTISTA_TERCERO",
-    "PROVEEDOR_POTENCIAL",
-    "USUARIO_ADMINISTRATIVO",
-    "CANDIDATO_A_EMPLEO",
-]
-
-
-class CategoriaPuntuacion(BaseModel):
-    categoria: CategoriaClasificacionLiteral
-    puntuacionDeConfianza: float
-    razonamiento: str
-    indicadoresClave: Optional[List[str]] = None
-
-
-class Clasificacion(BaseModel):
-    puntuacionesPorCategoria: List[CategoriaPuntuacion]
-    clasificacionPrimaria: CategoriaClasificacionLiteral
-    clasificacionesAlternativas: List[CategoriaClasificacionLiteral]
-
-
-class TipoDeInteraccionResponse(InteractionResponse):
-    clasificacion: Optional[Clasificacion] = None

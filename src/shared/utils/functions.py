@@ -1,20 +1,13 @@
 import logging
 from typing import Awaitable, Callable, Optional, Tuple, Any
 import asyncio
-
 import google.genai as genai
 from google.genai import types, errors
-
-from src.services.google_sheets import GoogleSheetsService
 from src.shared.constants import (
     GEMINI_MODEL,
     GEMINI_FALLBACK_MODEL,
 )
-from src.shared.enums import InteractionType
 from src.shared.schemas import InteractionMessage
-from src.shared.state import GlobalState
-from src.shared.tools import obtener_ayuda_humana
-
 from src.shared.utils.history import get_genai_history
 
 logger = logging.getLogger(__name__)
@@ -160,9 +153,9 @@ async def execute_tool_calls_and_get_response(
         except errors.ServerError as e:
             logger.error(f"Gemini API Server Error after retries: {e}", exc_info=True)
             return (
-                obtener_ayuda_humana(),
-                {"obtener_ayuda_humana": True},
-                ["obtener_ayuda_humana"],
+                "Server Error",
+                {},
+                [],
                 {},
             )
 
@@ -235,63 +228,3 @@ async def execute_tool_calls_and_get_response(
     logger.info("--- End of Gemini call ---")
 
     return text_response, all_tool_results, all_tool_call_names, all_tool_args_map
-
-
-async def handle_in_progress_conversation(
-    history_messages: list[InteractionMessage],
-    current_state: any,
-    in_progress_state: any,
-    interaction_data: dict,
-    client: genai.Client,
-    sheets_service: Optional[GoogleSheetsService],
-    workflow_function: Callable[
-        [list[InteractionMessage], genai.Client, Optional[GoogleSheetsService], dict],
-        Awaitable[Tuple[list[InteractionMessage], any, Optional[str], dict]],
-    ],
-) -> Tuple[list[InteractionMessage], any, Optional[str], dict]:
-    """
-    Handles the main, in-progress conversation states by dispatching to the
-    appropriate workflow function based on the current state.
-    """
-    if current_state == in_progress_state:
-        (
-            messages,
-            next_state,
-            tool_call,
-            interaction_data,
-        ) = await workflow_function(
-            history_messages, client, sheets_service, interaction_data
-        )
-        return messages, next_state, tool_call, interaction_data
-
-    logger.warning(
-        f"Unhandled in-progress state: {current_state}. Escalating to human."
-    )
-    assistant_message_text = obtener_ayuda_humana()
-    tool_call_name = "obtener_ayuda_humana"
-    next_state = GlobalState.HUMAN_ESCALATION
-    assistant_message = InteractionMessage(
-        role=InteractionType.MODEL, message=assistant_message_text
-    )
-    return [assistant_message], next_state, tool_call_name, interaction_data
-
-async def get_final_text_response(
-        history_messages: list[InteractionMessage],
-        client: genai.Client,
-        system_prompt: str,
-) -> str:
-    """Gets a final text response from the model without tools."""
-    genai_history = await get_genai_history(history_messages)
-    config = types.GenerateContentConfig(
-        system_instruction=system_prompt,
-        temperature=0.0,
-    )
-    try:
-        response = await invoke_model_with_retries(
-            client.aio.models.generate_content,
-            model=GEMINI_MODEL, contents=genai_history, config=config
-        )
-        return get_response_text(response)
-    except errors.ServerError as e:
-        logger.error(f"Gemini API Server Error after retries: {e}", exc_info=True)
-        return obtener_ayuda_humana()
