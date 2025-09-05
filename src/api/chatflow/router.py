@@ -87,7 +87,9 @@ async def handle(
     history_messages.extend(response_messages)
 
     # Persist changes
-    interaction.messages = [msg.model_dump(exclude_none=True) for msg in history_messages]
+    interaction.messages = [
+        msg.model_dump(mode="json", exclude_none=True) for msg in history_messages
+    ]
     interaction.state = new_state.value
     interaction.interaction_data = interaction_data
 
