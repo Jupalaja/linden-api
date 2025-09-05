@@ -152,7 +152,7 @@ graph:
       message: "$PROMPT_OFFER_BOOK_CALL"
       next: "SENT_BOOK_CALL_OFFER"
     - id: "REQUEST_RESOLVED_AWAIT_NEW_MESSAGE"
-      next: "ANALIZING_INTENT"
+      next: "ANALYZING_INTENT"
     - id: "SENT_BOOK_CALL_OFFER"
       action: "use_tools"
       tools:
