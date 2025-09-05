@@ -1,16 +1,13 @@
 import logging
-from typing import Optional, Tuple, List, Callable, Any
+from typing import Optional
 
 import google.genai as genai
 
-from .knowledge_data import FAQ_DATA, EVENTS_DATA
-from .prompts import *
 from .state import ChatflowState
 from .tools import *
 from src.config import settings
 from src.shared.enums import InteractionType
 from src.shared.schemas import InteractionMessage
-from src.shared.state import GlobalState
 from src.services.google_sheets import GoogleSheetsService
 from src.shared.utils.functions import execute_tool_calls_and_get_response
 
@@ -131,9 +128,8 @@ async def provide_condition_information_workflow(
     client: genai.Client,
     sheets_service: Optional[GoogleSheetsService],
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
-    tools_to_use = [send_information_about_condition]
     response_text, _, _, _ = await _get_response(
-        history_messages, client, tools_to_use, CHATFLOW_SYSTEM_PROMPT
+        history_messages, client, [], CHATFLOW_SYSTEM_PROMPT, context=CONDITIONS_DATA
     )
     return (
         [InteractionMessage(role=InteractionType.MODEL, message=response_text)],
@@ -264,11 +260,10 @@ async def event_question_workflow(
     client: genai.Client,
     sheets_service: Optional[GoogleSheetsService],
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
-    tools_to_use = [send_event_information]
     response_text, _, _, _ = await _get_response(
         history_messages,
         client,
-        tools_to_use,
+        [],
         CHATFLOW_SYSTEM_PROMPT,
         context=EVENTS_DATA,
     )
@@ -286,9 +281,8 @@ async def provided_faq_workflow(
     client: genai.Client,
     sheets_service: Optional[GoogleSheetsService],
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
-    tools_to_use = [send_faq_information]
     response_text, _, _, _ = await _get_response(
-        history_messages, client, tools_to_use, CHATFLOW_SYSTEM_PROMPT
+        history_messages, client, [], CHATFLOW_SYSTEM_PROMPT, context=FAQ_DATA
     )
     return (
         [InteractionMessage(role=InteractionType.MODEL, message=response_text)],
