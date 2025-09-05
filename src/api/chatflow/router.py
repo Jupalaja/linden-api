@@ -42,9 +42,11 @@ async def handle(
         history_messages = [
             InteractionMessage.model_validate(msg) for msg in interaction.messages
         ]
+        # Get the last state from the list
+        last_state = interaction.states[-1] if interaction.states else None
         current_state = (
-            ChatflowState(interaction.state)
-            if interaction.state
+            ChatflowState(last_state)
+            if last_state
             else ChatflowState.CLASSIFYING_INTENT
         )
         interaction_data = interaction.interaction_data or {}
@@ -58,7 +60,7 @@ async def handle(
         interaction = Interaction(
             session_id=session_id,
             messages=[],
-            state=current_state.value,
+            states=[current_state.value],
             interaction_data=interaction_data,
             user_data=user_data,
         )
@@ -89,7 +91,8 @@ async def handle(
     interaction.messages = [
         msg.model_dump(mode="json", exclude_none=True) for msg in history_messages
     ]
-    interaction.state = new_state.value
+    # Append the new state. To ensure SQLAlchemy detects the change, we re-assign the list.
+    interaction.states = interaction.states + [new_state.value]
     interaction.interaction_data = interaction_data
 
     await db.commit()

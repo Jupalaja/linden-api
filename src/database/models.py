@@ -13,7 +13,7 @@ class Interaction(Base):
 
     session_id = Column(String, primary_key=True, index=True)
     messages = Column(JSONB, nullable=False)
-    state = Column(String, nullable=True)
+    states = Column(JSONB, nullable=False, server_default='["IDLE"]')
     interaction_data = Column(JSON, nullable=True)
     user_data = Column(JSON, nullable=True)
     is_deleted = Column(Boolean, default=False, nullable=False)
