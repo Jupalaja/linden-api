@@ -331,7 +331,7 @@ async def book_call_declined_workflow(
     client: genai.Client,
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
     return await _send_message(
-        PROMPT_PROVIDE_CONTACT_INFO, ChatflowState.CONVERSATION_FINISHED, interaction_data
+        PROMPT_PROVIDE_CONTACT_INFO, ChatflowState.CONVERSATION_FINISHED_OFFER_NEWSLETTER, interaction_data
     )
 
 
@@ -347,7 +347,7 @@ async def book_call_link_sent_workflow(
     response_text = tool_results.get("send_book_call_link", "Here's the booking link: https://bookinglink.com/")
     return (
         [InteractionMessage(role=InteractionType.MODEL, message=response_text)],
-        ChatflowState.CONVERSATION_FINISHED,
+        ChatflowState.CONVERSATION_FINISHED_OFFER_NEWSLETTER,
         None,
         interaction_data,
     )
