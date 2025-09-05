@@ -76,7 +76,7 @@ async def handle(
     client = request.app.state.genai_client
     sheets_service = request.app.state.sheets_service
 
-    response_messages, new_state, tool_call, interaction_data = await handle_chatflow(
+    response_messages, new_states, tool_call, interaction_data = await handle_chatflow(
         session_id=session_id,
         history_messages=history_messages,
         current_state=current_state,
@@ -92,7 +92,7 @@ async def handle(
         msg.model_dump(mode="json", exclude_none=True) for msg in history_messages
     ]
     # Append the new state. To ensure SQLAlchemy detects the change, we re-assign the list.
-    interaction.states = interaction.states + [new_state.value]
+    interaction.states = interaction.states + [s.value for s in new_states]
     interaction.interaction_data = interaction_data
 
     await db.commit()

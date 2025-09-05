@@ -11,7 +11,7 @@ async def handle_chatflow(
     current_state: ChatflowState,
     interaction_data: Optional[dict],
     client: genai.Client,
-) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
+) -> tuple[list[InteractionMessage], list[ChatflowState], str | None, dict]:
     interaction_data = dict(interaction_data) if interaction_data else {}
 
     workflow_map = {
@@ -52,6 +52,7 @@ async def handle_chatflow(
 
     next_state = current_state
     final_tool_call = None
+    new_states = []
 
     # Loop to handle state transitions within a single turn
     for _ in range(5):  # Safety break to prevent infinite loops
@@ -78,10 +79,11 @@ async def handle_chatflow(
             # State is stable, break loop
             break
 
+        new_states.append(new_state)
         next_state = new_state
 
         if new_messages or tool_call:
             # If workflow produced output for the user, stop for this turn
             break
 
-    return all_new_messages, next_state, final_tool_call, interaction_data
+    return all_new_messages, new_states, final_tool_call, interaction_data
