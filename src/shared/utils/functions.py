@@ -116,7 +116,7 @@ async def execute_tool_calls_and_get_response(
     client: genai.Client,
     tools: list,
     system_prompt: str,
-    max_turns: int = 10,
+    max_turns: int = 1,
 ) -> Tuple[Optional[str], dict, list[str], dict]:
     """
     Executes a multi-turn conversation with tool calling until a text response is received.

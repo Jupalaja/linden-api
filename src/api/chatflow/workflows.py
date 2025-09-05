@@ -217,23 +217,22 @@ async def faq_workflow(
     client: genai.Client,
     sheets_service: Optional[GoogleSheetsService],
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
-    tools_to_use = [
-        is_question_insurance,
-        is_service_pricey,
-        is_question_in_person,
-        is_general_faq_question,
-    ]
+    tools_to_use = [classify_faq]
     _, tool_results, _, _ = await _get_response(
         history_messages, client, tools_to_use, CHATFLOW_SYSTEM_PROMPT, context=FAQ_DATA
     )
-    if tool_results.get("is_question_insurance"):
-        next_state = ChatflowState.ANSWER_QUESTION_INSURANCE
-    elif tool_results.get("is_service_pricey"):
-        next_state = ChatflowState.ANSWER_QUESTION_PRICEY_SERVICE
-    elif tool_results.get("is_question_in_person"):
-        next_state = ChatflowState.ANSWER_QUESTION_IN_PERSON
-    else:
-        next_state = ChatflowState.PROVIDED_FAQ_INFORMATION  # Fallback to general FAQ
+
+    intent = tool_results.get("classify_faq")
+
+    state_map = {
+        "is_question_in_person": ChatflowState.ANSWER_QUESTION_IN_PERSON,
+        "is_question_insurance": ChatflowState.ANSWER_QUESTION_INSURANCE,
+        "is_service_pricey": ChatflowState.ANSWER_QUESTION_PRICEY_SERVICE,
+        "is_general_faq_question": ChatflowState.PROVIDED_FAQ_INFORMATION,
+    }
+    next_state = state_map.get(
+        intent, ChatflowState.PROVIDED_FAQ_INFORMATION
+    )  # Fallback to faq-information
     return [], next_state, None, interaction_data
 
 

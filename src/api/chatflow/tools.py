@@ -15,6 +15,14 @@ ConversationType = Literal[
 ]
 
 
+QuestionType = Literal[
+    "is_question_in_person",
+    "is_question_insurance",
+    "is_service_pricey",
+    "is_general_faq_question",
+]
+
+
 def classify_intent(intent: ConversationType) -> ConversationType:
     """Classifies the user's intent. Call this function with the most relevant classification.
 
@@ -32,24 +40,13 @@ def is_valid_state(is_valid: bool) -> bool:
     return is_valid
 
 
-def is_question_in_person():
-    """Use this tool when the user asks about in-person visits"""
-    return PROMPT_QUESTION_IN_PERSON
+def classify_faq(questionType: QuestionType) -> QuestionType:
+    """Classifies the user's question. Call this function with the most relevant classification.
 
-
-def is_question_insurance():
-    """Use this tool when the user asks about consultations with insurance"""
-    return PROMPT_QUESTION_INSURANCE
-
-
-def is_service_pricey():
-    """Use this tool when the answer expresses that the service is expensive or pricey, also if they ask for 'discounts' or reduced prices"""
-    return PROMPT_QUESTION_PRICEY_SERVICE
-
-
-def is_general_faq_question(is_question_in_person: bool, is_question_insurance: bool, is_service_pricey: bool) -> bool:
-    """This tool should return True if all the input values are false"""
-    return not (is_question_in_person or is_question_insurance or is_service_pricey)
+    Args:
+        questionType: The user's type of question.
+    """
+    return questionType
 
 
 # Boolean toggle tools
