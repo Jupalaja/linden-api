@@ -1,71 +1,29 @@
-# Boolean flag tools
-def is_emergency():
-    """Use this tool when the user mentions that this is an emergency or a death-live situation"""
-    return True
+from typing import Literal, List
+from .prompts import *
+ConversationType = Literal[
+    "is_emergency",
+    "is_potential_patient",
+    "is_question_about_condition",
+    "is_question_event",
+    "is_frequently_asked_question",
+    "is_out_of_scope_question",
+    "is_frustrated_needs_human",
+    "is_acknowledgment",
+]
 
-
-def is_potential_patient():
-    """Use this tool when the user expresses interest about the clinic and it's services"""
-    return True
-
-
-def is_question_about_condition():
-    """Use this tool when the user asks a question about a condition they have"""
-    return True
-
-
-def is_question_event():
-    """Use this tool when the user asks a question about an event"""
-    return True
-
-
-def is_frequently_asked_question():
-    """Use this tool when the user asks a question about one of the following topics:
-    - Questions about insurance
-    - Questions about the price of the services
-    - Questions about the location of the clinic and where does it provide services
-    - Questions about in-person visits
-    - Questions about insurance and insurance and insurance
+def classify_intent(
+    conversation_history: List[str]
+) -> ConversationType:
     """
-    return True
+    Analyzes the user's conversation and returns the single most relevant classification for the most recent message.
 
+    Args:
+        conversation_history: An ordered list of messages in the conversation, starting with the oldest.
 
-def is_out_of_scope_question():
-    """Use this tool when the user asks a question un-related to anything from the clinic or health services"""
-    return True
-
-
-def is_frustrated_needs_human():
-    """Use this tool when the user expresses frustration or intent co communicate with a human"""
-    return True
-
-
-def is_acknowledgment():
-    """Use this tool when the user acknowledges a response and says something like
-    - Thank you
-    - That's all I wanted to know
+    Returns:
+        The single most appropriate category chosen from the ConversationType options.
     """
-    return True
-
-
-def is_question_in_person():
-    """Use this tool when the user asks about in-person visits"""
     pass
-
-
-def is_question_insurance():
-    """Use this tool when the user asks about consultations with insurance"""
-    pass
-
-
-def is_question_location():
-    """Use this tool when the user asks a question about where the services are provided"""
-    pass
-
-
-def is_service_pricey():
-    """Use this tool when the answer expresses that the service is expensive or pricey, also if they ask for 'discounts' or reduced prices"""
-
 
 
 def is_valid_state(is_valid: bool):
@@ -76,9 +34,23 @@ def is_valid_state(is_valid: bool):
     return is_valid
 
 
+def is_question_in_person():
+    """Use this tool when the user asks about in-person visits"""
+    return PROMPT_QUESTION_IN_PERSON
+
+
+def is_question_insurance():
+    """Use this tool when the user asks about consultations with insurance"""
+    return PROMPT_QUESTION_INSURANCE
+
+
+def is_service_pricey():
+    """Use this tool when the answer expresses that the service is expensive or pricey, also if they ask for 'discounts' or reduced prices"""
+    return PROMPT_QUESTION_PRICEY_SERVICE
+
 
 # Boolean toggle tools
-def is_condition_treated(is_treated: bool) -> bool:
+def is_condition_treated() -> bool:
     """Use this tool to identify if the condition provided by the user is treated or not, if the condition is treated return True, otherwise return False.
 
     At Aya Naturopathic Medicine, we support a wide range of health concerns using a root-cause, systems-based approach. Our doctors work with patients of all ages (6+) and specialize in the following areas:
@@ -100,11 +72,16 @@ def is_condition_treated(is_treated: bool) -> bool:
     - Severe psychiatric conditions
     - Primary immunodeficiency disorders
     """
-    return is_treated
+    pass
 
 
 def user_accepts_book_call(user_accepts: bool):
     """Use this tool to determine if the user accepts a book call, if the user accepts return True, otherwise return False"""
+    return user_accepts
+
+
+def user_accepts_newsletter(user_accepts: bool):
+    """Use this tool to determine if the user accepts to be included in the newsletter mailing list, if the user accepts return True, otherwise return False"""
     return user_accepts
 
 
