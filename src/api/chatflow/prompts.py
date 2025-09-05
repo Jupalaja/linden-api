@@ -24,3 +24,7 @@ PROMPT_INVALID_STATE="It looks like you're not in a state where our doctors are 
 PROMPT_QUESTION_IN_PERSON="Yes! We see patients in person at Whole Life Healthcare in Newington, NH. Dr. Jeffrey is currently there on Fridays, and starting in August, both Dr. Jeffrey and Dr. Silva will offer in-person care Tuesday through Friday."
 PROMPT_QUESTION_PRICEY_SERVICE="We’re happy to talk through what’s included and how care can be structured around your goals. A great next step is to book a free 15-minute discovery call."
 PROMPT_QUESTION_INSURANCE="We’re happy to talk through what’s included and how care can be structured around your goals. A great next step is to book a free 15-minute discovery call."
+PROMPT_EVENT_INFORMATION = "Here is the information about our next events"
+PROMPT_OUT_OF_SCOPE_QUESTION = "That’s a great question. I’m not able to answer it directly, but our doctors would be happy to help. You can schedule a free 15-minute discovery call here—or reach out to our team by phone or email!"
+PROMPT_GENERAL_FAQ_QUESTION = "Here's the answer to your response"
+PROMPT_ANSWER_ABOUT_CONDITION = "Here's the answer to your question"
