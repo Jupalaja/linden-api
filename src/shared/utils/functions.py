@@ -4,7 +4,6 @@ from typing import Any, Callable, Awaitable
 
 import google.genai as genai
 from google.genai import types, errors
-from google.genai.types import Tool
 
 from src.shared.constants import GEMINI_MODEL, GEMINI_FALLBACK_MODEL
 from src.shared.enums import InteractionType
@@ -91,11 +90,8 @@ async def call_single_tool(
         })
 
     try:
-        # Create tool from function
-        tool = Tool.from_function(tool_function)
-
         config = types.GenerateContentConfig(
-            tools=tool,
+            tools=[tool_function],
             system_instruction=full_system_prompt,
             temperature=0.0,
             automatic_function_calling=types.AutomaticFunctionCallingConfig(disable=True),
@@ -130,7 +126,7 @@ async def call_single_tool(
         return tool_results
 
     except Exception as e:
-        logger.error(f"Error in call_single_tool: {e}")
+        logger.error(f"Error in call_single_tool: {e}", exc_info=True)
         return {}
 
 
