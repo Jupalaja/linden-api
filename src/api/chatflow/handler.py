@@ -1,11 +1,9 @@
 import logging
 from typing import Optional, Any
-
 import google.genai as genai
 
-from src.shared.state import GlobalState
 from .state import ChatflowState
-from .workflows import run_chatflow_workflow
+from .workflows import *
 from src.services.google_sheets import GoogleSheetsService
 from src.shared.schemas import InteractionMessage
 
@@ -24,11 +22,4 @@ async def handle_chatflow(
 ]:
     interaction_data = dict(interaction_data) if interaction_data else {}
 
-    return await run_chatflow_workflow(
-        session_id=session_id,
-        history_messages=history_messages,
-        current_state=current_state,
-        interaction_data=interaction_data,
-        client=client,
-        sheets_service=sheets_service,
-    )
+    # TODO: Build Handler function
