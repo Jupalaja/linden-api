@@ -75,3 +75,7 @@ orjson~=3.11.3
 psycopg~=3.2.9
 psycopg2~=2.9.10
 psycopg2-binary~=2.9.10
+langchain-google-genai~=2.1.10
+typing_extensions~=4.14.0
+pyasn1_modules~=0.4.2
+pydantic_core~=2.33.2
