@@ -1,6 +1,7 @@
 from .workflows import *
 from src.shared.enums import InteractionType
 from src.shared.schemas import InteractionMessage
+from langchain_core.language_models import BaseChatModel
 
 logger = logging.getLogger(__name__)
 
@@ -10,7 +11,7 @@ async def handle_chatflow(
     history_messages: list[InteractionMessage],
     current_state: ChatflowState,
     interaction_data: Optional[dict],
-    client: genai.Client,
+    model: BaseChatModel,
 ) -> tuple[list[InteractionMessage], list[ChatflowState], str | None, dict]:
     interaction_data = dict(interaction_data) if interaction_data else {}
 
@@ -68,7 +69,7 @@ async def handle_chatflow(
         current_turn_history = history_messages + all_new_messages
 
         new_messages, new_state, tool_call, interaction_data = await workflow_func(
-            current_turn_history, interaction_data, client
+            current_turn_history, interaction_data, model
         )
 
         if new_messages:

@@ -1,7 +1,7 @@
 import logging
 from typing import Optional
 
-import google.genai as genai
+from langchain_core.language_models import BaseChatModel
 
 from .state import ChatflowState
 from .knowledge_data import *
@@ -25,10 +25,10 @@ async def _send_message(
 async def intent_classification_workflow(
     history_messages: list[InteractionMessage],
     interaction_data: dict,
-    client: genai.Client,
+    model: BaseChatModel,
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
     tool_results = await call_single_tool(
-        history_messages, client, classify_intent, CHATFLOW_SYSTEM_PROMPT
+        history_messages, model, classify_intent, CHATFLOW_SYSTEM_PROMPT
     )
     intent = tool_results.get("classify_intent")
 
@@ -51,10 +51,10 @@ async def intent_classification_workflow(
 async def question_condition_workflow(
     history_messages: list[InteractionMessage],
     interaction_data: dict,
-    client: genai.Client,
+    model: BaseChatModel,
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
     tool_results = await call_single_tool(
-        history_messages, client, is_condition_treated, CHATFLOW_SYSTEM_PROMPT
+        history_messages, model, is_condition_treated, CHATFLOW_SYSTEM_PROMPT
     )
     treated = tool_results.get("is_condition_treated", False)
     next_state = (
@@ -68,10 +68,10 @@ async def question_condition_workflow(
 async def provide_condition_information_workflow(
     history_messages: list[InteractionMessage],
     interaction_data: dict,
-    client: genai.Client,
+    model: BaseChatModel,
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
     response_text = await generate_response_text(
-        history_messages, client, CHATFLOW_SYSTEM_PROMPT, context=CONDITIONS_DATA
+        history_messages, model, CHATFLOW_SYSTEM_PROMPT, context=CONDITIONS_DATA
     )
     return (
         [InteractionMessage(role=InteractionType.MODEL, message=response_text)],
@@ -84,7 +84,7 @@ async def provide_condition_information_workflow(
 async def frustrated_customer_workflow(
     history_messages: list[InteractionMessage],
     interaction_data: dict,
-    client: genai.Client,
+    model: BaseChatModel,
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
     return await _send_message(
         PROMPT_FRUSTRATED_CUSTOMER_OFFER_BOOK_CALL,
@@ -96,7 +96,7 @@ async def frustrated_customer_workflow(
 async def out_of_scope_workflow(
     history_messages: list[InteractionMessage],
     interaction_data: dict,
-    client: genai.Client,
+    model: BaseChatModel,
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
     return await _send_message(
         PROMPT_OUT_OF_SCOPE_QUESTION,
@@ -108,10 +108,10 @@ async def out_of_scope_workflow(
 async def recommended_doctor_workflow(
     history_messages: list[InteractionMessage],
     interaction_data: dict,
-    client: genai.Client,
+    model: BaseChatModel,
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
     tool_results = await call_single_tool(
-        history_messages, client, send_doctor_information, CHATFLOW_SYSTEM_PROMPT
+        history_messages, model, send_doctor_information, CHATFLOW_SYSTEM_PROMPT
     )
     response_text = tool_results.get("send_doctor_information", "Our doctors would be happy to help with your condition.")
     return (
@@ -125,7 +125,7 @@ async def recommended_doctor_workflow(
 async def customer_acknowledges_workflow(
     history_messages: list[InteractionMessage],
     interaction_data: dict,
-    client: genai.Client,
+    model: BaseChatModel,
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
     return await _send_message(
         ACKNOWLEDGMENT_MESSAGE, ChatflowState.REQUEST_RESOLVED_AWAIT_NEW_MESSAGE, interaction_data
@@ -135,10 +135,10 @@ async def customer_acknowledges_workflow(
 async def faq_workflow(
     history_messages: list[InteractionMessage],
     interaction_data: dict,
-    client: genai.Client,
+    model: BaseChatModel,
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
     tool_results = await call_single_tool(
-        history_messages, client, classify_faq, CHATFLOW_SYSTEM_PROMPT, context=FAQ_DATA
+        history_messages, model, classify_faq, CHATFLOW_SYSTEM_PROMPT, context=FAQ_DATA
     )
 
     intent = tool_results.get("classify_faq")
@@ -158,7 +158,7 @@ async def faq_workflow(
 async def ask_state_workflow(
     history_messages: list[InteractionMessage],
     interaction_data: dict,
-    client: genai.Client,
+    model: BaseChatModel,
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
     return await _send_message(PROMPT_ASK_STATE, ChatflowState.ASKED_STATE, interaction_data)
 
@@ -166,7 +166,7 @@ async def ask_state_workflow(
 async def condition_not_treated_workflow(
     history_messages: list[InteractionMessage],
     interaction_data: dict,
-    client: genai.Client,
+    model: BaseChatModel,
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
     return await _send_message(
         PROMPT_CONDITION_NOT_TREATED,
@@ -178,11 +178,11 @@ async def condition_not_treated_workflow(
 async def event_question_workflow(
     history_messages: list[InteractionMessage],
     interaction_data: dict,
-    client: genai.Client,
+    model: BaseChatModel,
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
     response_text = await generate_response_text(
         history_messages,
-        client,
+        model,
         CHATFLOW_SYSTEM_PROMPT,
         context=EVENTS_DATA,
     )
@@ -197,10 +197,10 @@ async def event_question_workflow(
 async def provided_faq_workflow(
     history_messages: list[InteractionMessage],
     interaction_data: dict,
-    client: genai.Client,
+    model: BaseChatModel,
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
     response_text = await generate_response_text(
-        history_messages, client, CHATFLOW_SYSTEM_PROMPT, context=FAQ_DATA
+        history_messages, model, CHATFLOW_SYSTEM_PROMPT, context=FAQ_DATA
     )
     return (
         [InteractionMessage(role=InteractionType.MODEL, message=response_text)],
@@ -213,7 +213,7 @@ async def provided_faq_workflow(
 async def emergency_workflow(
     history_messages: list[InteractionMessage],
     interaction_data: dict,
-    client: genai.Client,
+    model: BaseChatModel,
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
     return await _send_message(
         OUTPUT_MESSAGE_EMERGENCY,
@@ -225,7 +225,7 @@ async def emergency_workflow(
 async def answer_insurance_workflow(
     history_messages: list[InteractionMessage],
     interaction_data: dict,
-    client: genai.Client,
+    model: BaseChatModel,
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
     return await _send_message(
         PROMPT_QUESTION_INSURANCE,
@@ -237,7 +237,7 @@ async def answer_insurance_workflow(
 async def answer_pricey_service_workflow(
     history_messages: list[InteractionMessage],
     interaction_data: dict,
-    client: genai.Client,
+    model: BaseChatModel,
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
     return await _send_message(
         PROMPT_QUESTION_PRICEY_SERVICE,
@@ -249,7 +249,7 @@ async def answer_pricey_service_workflow(
 async def answer_in_person_workflow(
     history_messages: list[InteractionMessage],
     interaction_data: dict,
-    client: genai.Client,
+    model: BaseChatModel,
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
     return await _send_message(
         PROMPT_QUESTION_IN_PERSON,
@@ -261,10 +261,10 @@ async def answer_in_person_workflow(
 async def validate_state_workflow(
     history_messages: list[InteractionMessage],
     interaction_data: dict,
-    client: genai.Client,
+    model: BaseChatModel,
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
     tool_results = await call_single_tool(
-        history_messages, client, is_valid_state, CHATFLOW_SYSTEM_PROMPT
+        history_messages, model, is_valid_state, CHATFLOW_SYSTEM_PROMPT
     )
     valid = tool_results.get("is_valid_state", False)
     if valid:
@@ -281,7 +281,7 @@ async def validate_state_workflow(
 async def offer_book_call_workflow(
     history_messages: list[InteractionMessage],
     interaction_data: dict,
-    client: genai.Client,
+    model: BaseChatModel,
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
     return await _send_message(
         PROMPT_OFFER_BOOK_CALL, ChatflowState.SENT_BOOK_CALL_OFFER, interaction_data
@@ -291,7 +291,7 @@ async def offer_book_call_workflow(
 async def request_resolved_workflow(
     history_messages: list[InteractionMessage],
     interaction_data: dict,
-    client: genai.Client,
+    model: BaseChatModel,
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
     # This state loops back to intent classification for a new user query
     return [], ChatflowState.CLASSIFYING_INTENT, None, interaction_data
@@ -300,10 +300,10 @@ async def request_resolved_workflow(
 async def sent_book_call_offer_workflow(
     history_messages: list[InteractionMessage],
     interaction_data: dict,
-    client: genai.Client,
+    model: BaseChatModel,
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
     tool_results = await call_single_tool(
-        history_messages, client, user_accepts_book_call, CHATFLOW_SYSTEM_PROMPT
+        history_messages, model, user_accepts_book_call, CHATFLOW_SYSTEM_PROMPT
     )
     accepts = tool_results.get("user_accepts_book_call", False)
     next_state = (
@@ -317,7 +317,7 @@ async def sent_book_call_offer_workflow(
 async def book_call_declined_workflow(
     history_messages: list[InteractionMessage],
     interaction_data: dict,
-    client: genai.Client,
+    model: BaseChatModel,
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
     return await _send_message(
         PROMPT_PROVIDE_CONTACT_INFO, ChatflowState.CONVERSATION_FINISHED_OFFER_NEWSLETTER, interaction_data
@@ -327,10 +327,10 @@ async def book_call_declined_workflow(
 async def book_call_link_sent_workflow(
     history_messages: list[InteractionMessage],
     interaction_data: dict,
-    client: genai.Client,
+    model: BaseChatModel,
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
     tool_results = await call_single_tool(
-        history_messages, client, send_book_call_link, CHATFLOW_SYSTEM_PROMPT
+        history_messages, model, send_book_call_link, CHATFLOW_SYSTEM_PROMPT
     )
     # The send_book_call_link tool returns the message to send
     response_text = tool_results.get("send_book_call_link", "Here's the booking link: https://bookinglink.com/")
@@ -345,7 +345,7 @@ async def book_call_link_sent_workflow(
 async def conversation_finished_workflow(
     history_messages: list[InteractionMessage],
     interaction_data: dict,
-    client: genai.Client,
+    model: BaseChatModel,
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
     return await _send_message(
         PROMPT_OFFER_NEWSLETTER,
@@ -357,10 +357,10 @@ async def conversation_finished_workflow(
 async def await_newsletter_response_workflow(
     history_messages: list[InteractionMessage],
     interaction_data: dict,
-    client: genai.Client,
+    model: BaseChatModel,
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
     tool_results = await call_single_tool(
-        history_messages, client, user_accepts_newsletter, CHATFLOW_SYSTEM_PROMPT
+        history_messages, model, user_accepts_newsletter, CHATFLOW_SYSTEM_PROMPT
     )
     accepts = tool_results.get("user_accepts_newsletter", False)
     if accepts:
@@ -373,10 +373,10 @@ async def await_newsletter_response_workflow(
 async def mailing_list_accepted_workflow(
     history_messages: list[InteractionMessage],
     interaction_data: dict,
-    client: genai.Client,
+    model: BaseChatModel,
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
     tool_results = await call_single_tool(
-        history_messages, client, save_to_mailing_list, CHATFLOW_SYSTEM_PROMPT
+        history_messages, model, save_to_mailing_list, CHATFLOW_SYSTEM_PROMPT
     )
     # The save_to_mailing_list tool returns a confirmation message
     response_text = tool_results.get("save_to_mailing_list", "Thank you for subscribing to our mailing list!")
@@ -392,7 +392,7 @@ async def mailing_list_accepted_workflow(
 async def final_state_workflow(
     history_messages: list[InteractionMessage],
     interaction_data: dict,
-    client: genai.Client,
+    model: BaseChatModel,
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
     return await _send_message(
         PROMPT_FAREWELL_MESSAGE,
