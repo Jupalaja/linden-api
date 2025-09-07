@@ -1,4 +1,5 @@
 from typing import Literal
+from langchain_core.tools import tool
 
 ConversationType = Literal[
     "is_emergency",
@@ -20,6 +21,7 @@ QuestionType = Literal[
 ]
 
 
+@tool
 def classify_intent(intent: ConversationType) -> ConversationType:
     """Classifies the user's intent. Call this function with the most relevant classification.
 
@@ -29,6 +31,7 @@ def classify_intent(intent: ConversationType) -> ConversationType:
     return intent
 
 
+@tool
 def is_valid_state(is_valid: bool) -> bool:
     """Use this tool to validate if the state where user resides in is a valid state to provide the service
 
@@ -37,6 +40,7 @@ def is_valid_state(is_valid: bool) -> bool:
     return is_valid
 
 
+@tool
 def classify_faq(questionType: QuestionType) -> QuestionType:
     """Classifies the user's question. Call this function with the most relevant classification.
 
@@ -47,6 +51,7 @@ def classify_faq(questionType: QuestionType) -> QuestionType:
 
 
 # Boolean toggle tools
+@tool
 def is_condition_treated(is_treated: bool) -> bool:
     """Use this tool to identify if the condition provided by the user is treated or not. Set `is_treated` to True if the condition is treated, otherwise set to False.
 
@@ -72,21 +77,26 @@ def is_condition_treated(is_treated: bool) -> bool:
     return is_treated
 
 
+@tool
 def user_accepts_book_call(user_accepts: bool) -> bool:
     """Use this tool to determine if the user accepts a book call, if the user accepts return True, otherwise return False"""
     return user_accepts
 
 
+@tool
 def user_accepts_newsletter(user_accepts: bool) -> bool:
     """Use this tool to determine if the user accepts to be included in the newsletter mailing list, if the user accepts return True, otherwise return False"""
     return user_accepts
 
 
 # Special functions (mocked for now)
+@tool
 def save_to_mailing_list() -> str:
+    """Use this tool to save the user to the mailing list."""
     return "save_to_mailing_list"
 
 
+@tool
 def send_book_call_link() -> str:
     """Use this tool to provide the user with the booking link for a free 15-minute discovery call.
     The link is: https://bookinglink.com/
@@ -94,11 +104,13 @@ def send_book_call_link() -> str:
     return "Here's the bool call link: https://bookinglink.com/"
 
 
+@tool
 def send_user_data_form() -> str:
     """Use this tool to send a form to the user to collect their data."""
     return "send_user_data_form"
 
 
+@tool
 def send_doctor_information(best_doctor_for_client:str) -> str:
     """Use this tool to let the customer know what doctor is better for their necessity, their availability, and location.
     

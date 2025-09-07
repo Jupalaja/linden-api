@@ -1,5 +1,4 @@
 import logging
-from typing import Optional
 
 from langchain_core.language_models import BaseChatModel
 
@@ -7,10 +6,10 @@ from .state import ChatflowState
 from .knowledge_data import *
 from .prompts import *
 from .tools import *
-from src.config import settings
 from src.shared.enums import InteractionType
 from src.shared.schemas import InteractionMessage
 from src.shared.utils.functions import call_single_tool, generate_response_text
+from src.shared.utils.history import get_langchain_history
 
 logger = logging.getLogger(__name__)
 
@@ -27,8 +26,9 @@ async def intent_classification_workflow(
     interaction_data: dict,
     model: BaseChatModel,
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
+    langchain_messages = get_langchain_history(history_messages)
     tool_results = await call_single_tool(
-        history_messages, model, classify_intent, CHATFLOW_SYSTEM_PROMPT
+        langchain_messages, model, classify_intent, CHATFLOW_SYSTEM_PROMPT
     )
     intent = tool_results.get("classify_intent")
 
@@ -53,8 +53,9 @@ async def question_condition_workflow(
     interaction_data: dict,
     model: BaseChatModel,
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
+    langchain_messages = get_langchain_history(history_messages)
     tool_results = await call_single_tool(
-        history_messages, model, is_condition_treated, CHATFLOW_SYSTEM_PROMPT
+        langchain_messages, model, is_condition_treated, CHATFLOW_SYSTEM_PROMPT
     )
     treated = tool_results.get("is_condition_treated", False)
     next_state = (
@@ -110,8 +111,9 @@ async def recommended_doctor_workflow(
     interaction_data: dict,
     model: BaseChatModel,
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
+    langchain_messages = get_langchain_history(history_messages)
     tool_results = await call_single_tool(
-        history_messages, model, send_doctor_information, CHATFLOW_SYSTEM_PROMPT
+        langchain_messages, model, send_doctor_information, CHATFLOW_SYSTEM_PROMPT
     )
     response_text = tool_results.get("send_doctor_information", "Our doctors would be happy to help with your condition.")
     return (
@@ -137,8 +139,9 @@ async def faq_workflow(
     interaction_data: dict,
     model: BaseChatModel,
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
+    langchain_messages = get_langchain_history(history_messages)
     tool_results = await call_single_tool(
-        history_messages, model, classify_faq, CHATFLOW_SYSTEM_PROMPT, context=FAQ_DATA
+        langchain_messages, model, classify_faq, CHATFLOW_SYSTEM_PROMPT, context=FAQ_DATA
     )
 
     intent = tool_results.get("classify_faq")
@@ -263,8 +266,9 @@ async def validate_state_workflow(
     interaction_data: dict,
     model: BaseChatModel,
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
+    langchain_messages = get_langchain_history(history_messages)
     tool_results = await call_single_tool(
-        history_messages, model, is_valid_state, CHATFLOW_SYSTEM_PROMPT
+        langchain_messages, model, is_valid_state, CHATFLOW_SYSTEM_PROMPT
     )
     valid = tool_results.get("is_valid_state", False)
     if valid:
@@ -302,8 +306,9 @@ async def sent_book_call_offer_workflow(
     interaction_data: dict,
     model: BaseChatModel,
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
+    langchain_messages = get_langchain_history(history_messages)
     tool_results = await call_single_tool(
-        history_messages, model, user_accepts_book_call, CHATFLOW_SYSTEM_PROMPT
+        langchain_messages, model, user_accepts_book_call, CHATFLOW_SYSTEM_PROMPT
     )
     accepts = tool_results.get("user_accepts_book_call", False)
     next_state = (
@@ -329,8 +334,9 @@ async def book_call_link_sent_workflow(
     interaction_data: dict,
     model: BaseChatModel,
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
+    langchain_messages = get_langchain_history(history_messages)
     tool_results = await call_single_tool(
-        history_messages, model, send_book_call_link, CHATFLOW_SYSTEM_PROMPT
+        langchain_messages, model, send_book_call_link, CHATFLOW_SYSTEM_PROMPT
     )
     # The send_book_call_link tool returns the message to send
     response_text = tool_results.get("send_book_call_link", "Here's the booking link: https://bookinglink.com/")
@@ -359,8 +365,9 @@ async def await_newsletter_response_workflow(
     interaction_data: dict,
     model: BaseChatModel,
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
+    langchain_messages = get_langchain_history(history_messages)
     tool_results = await call_single_tool(
-        history_messages, model, user_accepts_newsletter, CHATFLOW_SYSTEM_PROMPT
+        langchain_messages, model, user_accepts_newsletter, CHATFLOW_SYSTEM_PROMPT
     )
     accepts = tool_results.get("user_accepts_newsletter", False)
     if accepts:
@@ -375,8 +382,9 @@ async def mailing_list_accepted_workflow(
     interaction_data: dict,
     model: BaseChatModel,
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
+    langchain_messages = get_langchain_history(history_messages)
     tool_results = await call_single_tool(
-        history_messages, model, save_to_mailing_list, CHATFLOW_SYSTEM_PROMPT
+        langchain_messages, model, save_to_mailing_list, CHATFLOW_SYSTEM_PROMPT
     )
     # The save_to_mailing_list tool returns a confirmation message
     response_text = tool_results.get("save_to_mailing_list", "Thank you for subscribing to our mailing list!")

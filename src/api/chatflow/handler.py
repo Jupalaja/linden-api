@@ -1,3 +1,5 @@
+from typing import Optional
+
 from .workflows import *
 from src.shared.enums import InteractionType
 from src.shared.schemas import InteractionMessage
