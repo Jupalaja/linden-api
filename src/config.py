@@ -1,11 +1,14 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from typing import Any, Optional, Dict
+from typing import Any, Dict
 from pydantic import PostgresDsn, field_validator, model_validator
 
 
 class Settings(BaseSettings):
     PROJECT_NAME: str = "API FastAPI"
     LOG_LEVEL: str = "DEBUG"
+
+    OPENAI_MODEL: str
+    GEMINI_MODEL: str
 
     # Database
     POSTGRES_HOST: str

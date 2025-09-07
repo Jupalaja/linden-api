@@ -1,6 +1,4 @@
-import os
 import logging
-from dotenv import load_dotenv
 from fastapi import APIRouter, Depends, Request
 from langchain_openai import ChatOpenAI
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -8,6 +6,7 @@ from sqlalchemy.future import select
 
 from src.api.chatflow.handler import handle_chatflow
 from src.api.chatflow.state import ChatflowState
+from src.config import settings
 from src.database.db import get_db
 from src.database.models import Interaction
 from src.shared.schemas import (
@@ -18,10 +17,6 @@ from src.shared.schemas import (
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
-load_dotenv()
-
-
-OPENAI_MODEL = os.getenv("OPENAI_MODEL")
 
 
 @router.post("/chatflow", response_model=InteractionResponse)
@@ -80,7 +75,7 @@ async def handle(
         interaction.user_data = user_data
 
     openai_model = ChatOpenAI(
-        model=OPENAI_MODEL,
+        model=settings.OPENAI_MODEL,
         temperature=0,
     )
 
