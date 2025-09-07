@@ -26,7 +26,10 @@ async def call_single_tool(
     with the messages, and if the model decides to call the tool, it executes
     the tool with the provided arguments and returns the result.
     """
-    model_with_tools = model.bind_tools([tool_instance])
+    model_with_tools = model.bind_tools(
+        [tool_instance],
+        tool_choice=tool_instance.name
+    )
 
     full_system_prompt = system_prompt
     if context:

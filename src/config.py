@@ -4,7 +4,7 @@ from pydantic import PostgresDsn, field_validator, model_validator
 
 
 class Settings(BaseSettings):
-    PROJECT_NAME: str = "Gemini FastAPI"
+    PROJECT_NAME: str = "API FastAPI"
     LOG_LEVEL: str = "DEBUG"
 
     # Database
@@ -30,31 +30,6 @@ class Settings(BaseSettings):
             values["DATABASE_URL"] = str(db_url)
         return values
 
-
-    # Google Service Account Credentials
-    GOOGLE_SA_TYPE: str = "service_account"
-    GOOGLE_SA_PROJECT_ID: str
-    GOOGLE_SA_PRIVATE_KEY_ID: str
-    GOOGLE_SA_PRIVATE_KEY: str
-    GOOGLE_SA_CLIENT_EMAIL: str
-    GOOGLE_SA_CLIENT_ID: str
-    GOOGLE_SA_AUTH_URI: str
-    GOOGLE_SA_TOKEN_URI: str
-    GOOGLE_SA_AUTH_PROVIDER_X509_CERT_URL: str
-    GOOGLE_SA_CLIENT_X509_CERT_URL: str
-
-    # Google Sheets
-    GOOGLE_SHEET_ID_EXPORT: Optional[str] = None
-
-    # Google GenAI
-    GOOGLE_GENAI_USE_VERTEXAI: bool = False
-    GOOGLE_CLOUD_PROJECT: Optional[str] = None
-    GOOGLE_CLOUD_LOCATION: Optional[str] = None
-    GOOGLE_API_KEY: Optional[str] = None
-
-    # Google Storage
-    BUCKET_URL: Optional[str] = None
-
     @field_validator("DATABASE_URL", mode="before")
     @classmethod
     def strip_quotes_from_db_url(cls, v: Any) -> Any:
@@ -62,12 +37,6 @@ class Settings(BaseSettings):
             return v.strip('"')
         return v
 
-    @field_validator("GOOGLE_SA_PRIVATE_KEY", mode="before")
-    @classmethod
-    def strip_quotes_from_private_key(cls, v: Any) -> Any:
-        if isinstance(v, str):
-            return v.strip('"')
-        return v
 
     model_config = SettingsConfigDict(
         env_file=".env", env_file_encoding="utf-8", extra="ignore"

@@ -6,14 +6,6 @@ from typing import List, Optional
 from src.shared.enums import InteractionType
 
 
-class ChatRequest(BaseModel):
-    message: str
-
-
-class ChatResponse(BaseModel):
-    response: str
-
-
 class HealthResponse(BaseModel):
     status: str
     db_connection: str
