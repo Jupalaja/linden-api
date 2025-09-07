@@ -1,6 +1,8 @@
+import os
 import logging
-
+from dotenv import load_dotenv
 from fastapi import APIRouter, Depends, Request
+from langchain_openai import ChatOpenAI
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
@@ -16,6 +18,10 @@ from src.shared.schemas import (
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
+load_dotenv()
+
+
+OPENAI_MODEL = os.getenv("OPENAI_MODEL")
 
 
 @router.post("/chatflow", response_model=InteractionResponse)
@@ -73,15 +79,17 @@ async def handle(
         user_data.update(interaction_request.userData)
         interaction.user_data = user_data
 
-    model = request.app.state.chat_model
-    sheets_service = request.app.state.sheets_service
+    openai_model = ChatOpenAI(
+        model=OPENAI_MODEL,
+        temperature=0,
+    )
 
     response_messages, new_states, tool_call, interaction_data = await handle_chatflow(
         session_id=session_id,
         history_messages=history_messages,
         current_state=current_state,
         interaction_data=interaction_data,
-        model=model,
+        model=openai_model,
     )
 
     # Update history with new messages from the handler
