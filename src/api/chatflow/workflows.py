@@ -21,6 +21,34 @@ async def _send_message(
     return response_messages, next_state, None, interaction_data
 
 
+async def idle_workflow(
+    history_messages: list[InteractionMessage],
+    interaction_data: dict,
+    model: BaseChatModel,
+) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
+    return [], ChatflowState.AWAITING_MESSAGE, None, interaction_data
+
+
+async def awaiting_message_workflow(
+    history_messages: list[InteractionMessage],
+    interaction_data: dict,
+    model: BaseChatModel,
+) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
+    return [], ChatflowState.AWAITING_USER_DATA, None, interaction_data
+
+
+async def awaiting_user_data_workflow(
+    history_messages: list[InteractionMessage],
+    interaction_data: dict,
+    model: BaseChatModel,
+) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
+    if not interaction_data.get("user_data_form_sent"):
+        interaction_data["user_data_form_sent"] = True
+        return [], ChatflowState.AWAITING_USER_DATA, "send_user_data_form", interaction_data
+    else:
+        return [], ChatflowState.CLASSIFYING_INTENT, None, interaction_data
+
+
 async def intent_classification_workflow(
     history_messages: list[InteractionMessage],
     interaction_data: dict,

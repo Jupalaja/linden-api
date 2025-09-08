@@ -45,17 +45,13 @@ async def handle(
         ]
         # Get the last state from the list
         last_state = interaction.states[-1] if interaction.states else None
-        current_state = (
-            ChatflowState(last_state)
-            if last_state
-            else ChatflowState.CLASSIFYING_INTENT
-        )
+        current_state = ChatflowState(last_state) if last_state else ChatflowState.IDLE
         interaction_data = interaction.interaction_data or {}
         user_data = interaction.user_data or {}
     else:
         # New interaction
         history_messages = []
-        current_state = ChatflowState.CLASSIFYING_INTENT
+        current_state = ChatflowState.IDLE
         interaction_data = {}
         user_data = {}
         interaction = Interaction(

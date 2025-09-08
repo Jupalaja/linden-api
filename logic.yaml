@@ -21,24 +21,22 @@ variables:
   WELCOME_MESSAGE: "Welcome to Aya Naturopathic Medicine! Want to ask a question or explore care options?"
 
 graph:
-  id: "graph_new_flow"
+  id: "graph_linden"
   nodes:
-    - id: "start"
+    - id: "IDLE"
+      decision:
+        state: "IDLE"
+        user_reply: "AWAITING_MESSAGE"
+    - id: "AWAITING_MESSAGE"
       action: "send_message"
       message: "$LINDEN_INTRODUCTION_MESSAGE"
-      next: "AWAITING_MESSAGE"
-    - id: "AWAITING_MESSAGE"
-      decision:
-        state: "AWAITING_MESSAGE"
-        user_reply: "AWAITING_USER_DATA"
+      next: "AWAITING_USER_DATA"
     - id: "AWAITING_USER_DATA"
       action: "use_special_function"
       function_name: "send_user_data_form"
       decision:
         state: "AWAITING_USER_DATA"
-        user_reply: "RECEIVED_USER_DATA"
-    - id: "RECEIVED_USER_DATA"
-      next: "CLASSIFYING_INTENT"
+        user_reply: "CLASSIFYING_INTENT"
     - id: "CLASSIFYING_INTENT"
       action: "use_tools"
       tools:

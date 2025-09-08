@@ -7,6 +7,16 @@ from langchain_core.language_models import BaseChatModel
 
 logger = logging.getLogger(__name__)
 
+# Define states that should pause the conversation flow and await user input
+STATES_AWAITING_USER_INPUT = {
+    ChatflowState.AWAITING_USER_DATA,
+    ChatflowState.CLASSIFYING_INTENT,
+    ChatflowState.ASKED_STATE,
+    ChatflowState.SENT_BOOK_CALL_OFFER,
+    ChatflowState.AWAITING_NEWSLETTER_RESPONSE,
+    ChatflowState.REQUEST_RESOLVED_AWAIT_NEW_MESSAGE,
+}
+
 
 async def handle_chatflow(
     session_id: str,
@@ -18,6 +28,9 @@ async def handle_chatflow(
     interaction_data = dict(interaction_data) if interaction_data else {}
 
     workflow_map = {
+        ChatflowState.IDLE: idle_workflow,
+        ChatflowState.AWAITING_MESSAGE: awaiting_message_workflow,
+        ChatflowState.AWAITING_USER_DATA: awaiting_user_data_workflow,
         ChatflowState.CLASSIFYING_INTENT: intent_classification_workflow,
         ChatflowState.INTENT_QUESTION_CONDITION: question_condition_workflow,
         ChatflowState.PROVIDE_CONDITION_INFORMATION: provide_condition_information_workflow,
@@ -86,8 +99,8 @@ async def handle_chatflow(
         new_states.append(new_state)
         next_state = new_state
 
-        if new_messages or tool_call:
-            # If workflow produced output for the user, stop for this turn
+        if (new_messages or tool_call) and next_state in STATES_AWAITING_USER_INPUT:
+            # If workflow produced output for the user and requires user input, stop for this turn
             break
 
     return all_new_messages, new_states, final_tool_call, interaction_data
