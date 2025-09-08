@@ -15,5 +15,4 @@ class Interaction(Base):
     messages = Column(JSONB, nullable=False)
     states = Column(JSONB, nullable=False, server_default='["IDLE"]')
     interaction_data = Column(JSON, nullable=True)
-    user_data = Column(JSON, nullable=True)
     is_deleted = Column(Boolean, default=False, nullable=False)

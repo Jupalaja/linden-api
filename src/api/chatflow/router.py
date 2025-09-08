@@ -47,28 +47,21 @@ async def handle(
         last_state = interaction.states[-1] if interaction.states else None
         current_state = ChatflowState(last_state) if last_state else ChatflowState.IDLE
         interaction_data = interaction.interaction_data or {}
-        user_data = interaction.user_data or {}
     else:
         # New interaction
         history_messages = []
         current_state = ChatflowState.IDLE
         interaction_data = {}
-        user_data = {}
         interaction = Interaction(
             session_id=session_id,
             messages=[],
             states=[ChatflowState.IDLE.value],
             interaction_data=interaction_data,
-            user_data=user_data,
         )
         db.add(interaction)
 
     # Append new user message to history
     history_messages.append(user_message)
-
-    if interaction_request.userData:
-        user_data.update(interaction_request.userData)
-        interaction.user_data = user_data
 
     openai_model = ChatOpenAI(
         model=settings.OPENAI_MODEL,
