@@ -165,7 +165,7 @@ def save_to_mailing_list() -> str:
     This will add them to receive monthly health tips, recipes, hormone/mood support info,
     retreat updates, and news about new services like biofeedback.
     """
-    return "save_to_mailing_list"
+    return "Perfect! I already have your email, so you have been added to our mailing list"
 
 
 @tool
