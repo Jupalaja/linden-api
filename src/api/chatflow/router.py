@@ -30,6 +30,7 @@ async def handle(
     continuing a conversation by loading history from the database,
     appending the new message, and saving the updated history.
     """
+    logger.info(f"Received chatflow request: {interaction_request.model_dump_json(indent=2)}")
     session_id = interaction_request.sessionId
     user_message = interaction_request.message
 
@@ -63,6 +64,21 @@ async def handle(
     # Append new user message to history
     history_messages.append(user_message)
 
+    if interaction_request.user_data:
+        # Create a copy to ensure SQLAlchemy detects changes to the JSON field.
+        interaction_data = interaction_data.copy()
+        # If user_data already exists and is a dict, update it. Otherwise, set it.
+        if "user_data" in interaction_data and isinstance(
+            interaction_data["user_data"], dict
+        ):
+            # Also copy the nested dict to avoid modifying it in-place from the original
+            interaction_data["user_data"] = interaction_data["user_data"].copy()
+            interaction_data["user_data"].update(interaction_request.user_data)
+        else:
+            interaction_data["user_data"] = interaction_request.user_data
+
+    logger.debug(f"Interaction data before handle_chatflow: {interaction_data}")
+
     openai_model = ChatOpenAI(
         model=settings.OPENAI_MODEL,
         temperature=0,
@@ -75,6 +91,8 @@ async def handle(
         interaction_data=interaction_data,
         model=openai_model,
     )
+
+    logger.debug(f"Interaction data after handle_chatflow: {interaction_data}")
 
     # Update history with new messages from the handler
     history_messages.extend(response_messages)
@@ -89,6 +107,8 @@ async def handle(
 
     await db.commit()
     await db.refresh(interaction)
+
+    logger.debug(f"Interaction data saved for session {session_id}: {interaction.interaction_data}")
 
     return InteractionResponse(
         sessionId=session_id,
