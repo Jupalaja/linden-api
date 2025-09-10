@@ -119,11 +119,13 @@ async def provide_condition_information_workflow(
     interaction_data: dict,
     model: BaseChatModel,
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
+    context = f"{PROMPT_ANSWER_ABOUT_CONDITION}\n\n{CONDITIONS_DATA}"
     response_text = await generate_response_text(
-        history_messages, model, CHATFLOW_SYSTEM_PROMPT, context=CONDITIONS_DATA
+        history_messages, model, CHATFLOW_SYSTEM_PROMPT, context=context
     )
+    interaction_data["condition_info_response"] = response_text
     return (
-        [InteractionMessage(role=InteractionType.MODEL, message=response_text)],
+        [],
         ChatflowState.RECOMMENDED_DOCTOR,
         None,
         interaction_data,
@@ -167,9 +169,20 @@ async def recommended_doctor_workflow(
     tool_results = await call_single_tool(
         langchain_messages, model, send_doctor_information, CHATFLOW_SYSTEM_PROMPT
     )
-    response_text = tool_results.get("send_doctor_information", "Our doctors would be happy to help with your condition.")
+    doctor_recommendation = tool_results.get(
+        "send_doctor_information", "Our doctors would be happy to help with your condition."
+    )
+
+    context = f"{PROMPT_RECOMMEND_DOCTOR}\n\nDoctor recommendation: {doctor_recommendation}"
+    response_text = await generate_response_text(
+        history_messages,
+        model,
+        CHATFLOW_SYSTEM_PROMPT,
+        context=context,
+    )
+    interaction_data["doctor_recommendation_response"] = response_text
     return (
-        [InteractionMessage(role=InteractionType.MODEL, message=response_text)],
+        [],
         ChatflowState.BOOK_CALL_NOT_OFFERED_YET,
         None,
         interaction_data,
@@ -220,8 +233,27 @@ async def ask_state_workflow(
     interaction_data: dict,
     model: BaseChatModel,
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
+    condition_info = interaction_data.pop("condition_info_response", "")
+    doctor_recommendation = interaction_data.pop("doctor_recommendation_response", "")
+
+    full_message_parts = []
+    if condition_info:
+        full_message_parts.append(condition_info)
+    if doctor_recommendation:
+        full_message_parts.append(doctor_recommendation)
+    full_message_parts.append(PROMPT_ASK_STATE)
+
+    full_message = "\n\n".join(part for part in full_message_parts if part)
+
+    add_ack = not (condition_info or doctor_recommendation)
+
     return await _send_message(
-        history_messages, model, PROMPT_ASK_STATE, ChatflowState.ASKED_STATE, interaction_data
+        history_messages,
+        model,
+        full_message,
+        ChatflowState.ASKED_STATE,
+        interaction_data,
+        add_acknowledgment=add_ack,
     )
 
 

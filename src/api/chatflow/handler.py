@@ -73,7 +73,7 @@ async def handle_chatflow(
     new_states = []
 
     # Loop to handle state transitions within a single turn
-    for _ in range(5):  # Safety break to prevent infinite loops
+    for _ in range(10):  # Safety break to prevent infinite loops
         workflow_func = workflow_map.get(next_state)
         if not workflow_func:
             logger.warning(
