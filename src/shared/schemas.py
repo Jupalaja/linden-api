@@ -1,7 +1,6 @@
 from datetime import datetime, timezone
-
 from pydantic import BaseModel, Field
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 
 from src.shared.enums import InteractionType
 
@@ -9,7 +8,6 @@ from src.shared.enums import InteractionType
 class HealthResponse(BaseModel):
     status: str
     db_connection: str
-    sheets_connection: str
 
 
 class InteractionMessage(BaseModel):
@@ -22,6 +20,7 @@ class InteractionMessage(BaseModel):
 class InteractionRequest(BaseModel):
     sessionId: str = Field(..., min_length=4)
     message: InteractionMessage
+    user_data: Optional[Dict[str, Any]] = None
 
 
 class InteractionResponse(BaseModel):

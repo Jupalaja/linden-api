@@ -51,9 +51,7 @@ async def health_check(request: Request):
     Checks the health of the application and its database connection.
     """
     db_ok = await test_db_connection()
-    sheets_ok = request.app.state.sheets_service is not None
     return HealthResponse(
         status="ok",
         db_connection="ok" if db_ok else "failed",
-        sheets_connection="ok" if sheets_ok else "failed",
     )
