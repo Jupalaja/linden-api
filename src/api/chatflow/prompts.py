@@ -29,3 +29,4 @@ PROMPT_OUT_OF_SCOPE_QUESTION = "That’s a great question. I’m not able to ans
 PROMPT_GENERAL_FAQ_QUESTION = "Here's the answer to your response"
 PROMPT_ANSWER_ABOUT_CONDITION = "Here's the answer to your question"
 PROMPT_FAREWELL_MESSAGE="It was a pleasure to assist you, see you the next time!"
+PROMPT_FOR_ACKNOWLEDGEMENT = "Based on the user's last message, provide a brief, one-sentence acknowledgment to show you've understood. For example, if the user provides their details for an inquiry, you might say 'Thanks for sharing that.' or if they ask a question, 'That's a great question.'"

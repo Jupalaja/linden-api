@@ -15,9 +15,29 @@ logger = logging.getLogger(__name__)
 
 
 async def _send_message(
-    message: str, next_state: ChatflowState, interaction_data: dict
+    history_messages: list[InteractionMessage],
+    model: BaseChatModel,
+    message: str,
+    next_state: ChatflowState,
+    interaction_data: dict,
+    add_acknowledgment: bool = True,
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
-    response_messages = [InteractionMessage(role=InteractionType.MODEL, message=message)]
+    if add_acknowledgment:
+        acknowledgment = await generate_response_text(
+            history_messages,
+            model,
+            system_prompt=CHATFLOW_SYSTEM_PROMPT,
+            context=PROMPT_FOR_ACKNOWLEDGEMENT,
+        )
+        if acknowledgment and acknowledgment.strip():
+            full_message = f"{acknowledgment}\n\n{message}"
+        else:
+            # Fallback if acknowledgment generation fails or is empty
+            full_message = message
+    else:
+        full_message = message
+
+    response_messages = [InteractionMessage(role=InteractionType.MODEL, message=full_message)]
     return response_messages, next_state, None, interaction_data
 
 
@@ -116,6 +136,8 @@ async def frustrated_customer_workflow(
     model: BaseChatModel,
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
     return await _send_message(
+        history_messages,
+        model,
         PROMPT_FRUSTRATED_CUSTOMER_OFFER_BOOK_CALL,
         ChatflowState.OFFER_BOOK_CALL,
         interaction_data,
@@ -128,6 +150,8 @@ async def out_of_scope_workflow(
     model: BaseChatModel,
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
     return await _send_message(
+        history_messages,
+        model,
         PROMPT_OUT_OF_SCOPE_QUESTION,
         ChatflowState.OFFER_BOOK_CALL,
         interaction_data,
@@ -158,7 +182,12 @@ async def customer_acknowledges_workflow(
     model: BaseChatModel,
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
     return await _send_message(
-        ACKNOWLEDGMENT_MESSAGE, ChatflowState.REQUEST_RESOLVED_AWAIT_NEW_MESSAGE, interaction_data
+        history_messages,
+        model,
+        ACKNOWLEDGMENT_MESSAGE,
+        ChatflowState.REQUEST_RESOLVED_AWAIT_NEW_MESSAGE,
+        interaction_data,
+        add_acknowledgment=False,
     )
 
 
@@ -191,7 +220,9 @@ async def ask_state_workflow(
     interaction_data: dict,
     model: BaseChatModel,
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
-    return await _send_message(PROMPT_ASK_STATE, ChatflowState.ASKED_STATE, interaction_data)
+    return await _send_message(
+        history_messages, model, PROMPT_ASK_STATE, ChatflowState.ASKED_STATE, interaction_data
+    )
 
 
 async def condition_not_treated_workflow(
@@ -200,6 +231,8 @@ async def condition_not_treated_workflow(
     model: BaseChatModel,
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
     return await _send_message(
+        history_messages,
+        model,
         PROMPT_CONDITION_NOT_TREATED,
         ChatflowState.REQUEST_RESOLVED_AWAIT_NEW_MESSAGE,
         interaction_data,
@@ -247,6 +280,8 @@ async def emergency_workflow(
     model: BaseChatModel,
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
     return await _send_message(
+        history_messages,
+        model,
         OUTPUT_MESSAGE_EMERGENCY,
         ChatflowState.REQUEST_RESOLVED_AWAIT_NEW_MESSAGE,
         interaction_data,
@@ -259,6 +294,8 @@ async def answer_insurance_workflow(
     model: BaseChatModel,
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
     return await _send_message(
+        history_messages,
+        model,
         PROMPT_QUESTION_INSURANCE,
         ChatflowState.REQUEST_RESOLVED_AWAIT_NEW_MESSAGE,
         interaction_data,
@@ -271,6 +308,8 @@ async def answer_pricey_service_workflow(
     model: BaseChatModel,
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
     return await _send_message(
+        history_messages,
+        model,
         PROMPT_QUESTION_PRICEY_SERVICE,
         ChatflowState.REQUEST_RESOLVED_AWAIT_NEW_MESSAGE,
         interaction_data,
@@ -283,6 +322,8 @@ async def answer_in_person_workflow(
     model: BaseChatModel,
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
     return await _send_message(
+        history_messages,
+        model,
         PROMPT_QUESTION_IN_PERSON,
         ChatflowState.REQUEST_RESOLVED_AWAIT_NEW_MESSAGE,
         interaction_data,
@@ -304,6 +345,8 @@ async def validate_state_workflow(
         return [], next_state, None, interaction_data
     else:
         return await _send_message(
+            history_messages,
+            model,
             PROMPT_INVALID_STATE,
             ChatflowState.REQUEST_RESOLVED_AWAIT_NEW_MESSAGE,
             interaction_data,
@@ -316,7 +359,11 @@ async def offer_book_call_workflow(
     model: BaseChatModel,
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
     return await _send_message(
-        PROMPT_OFFER_BOOK_CALL, ChatflowState.SENT_BOOK_CALL_OFFER, interaction_data
+        history_messages,
+        model,
+        PROMPT_OFFER_BOOK_CALL,
+        ChatflowState.SENT_BOOK_CALL_OFFER,
+        interaction_data,
     )
 
 
@@ -353,7 +400,11 @@ async def book_call_declined_workflow(
     model: BaseChatModel,
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
     return await _send_message(
-        PROMPT_PROVIDE_CONTACT_INFO, ChatflowState.CONVERSATION_FINISHED_OFFER_NEWSLETTER, interaction_data
+        history_messages,
+        model,
+        PROMPT_PROVIDE_CONTACT_INFO,
+        ChatflowState.CONVERSATION_FINISHED_OFFER_NEWSLETTER,
+        interaction_data,
     )
 
 
@@ -382,6 +433,8 @@ async def conversation_finished_workflow(
     model: BaseChatModel,
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
     return await _send_message(
+        history_messages,
+        model,
         PROMPT_OFFER_NEWSLETTER,
         ChatflowState.AWAITING_NEWSLETTER_RESPONSE,
         interaction_data,
@@ -431,7 +484,10 @@ async def final_state_workflow(
     model: BaseChatModel,
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
     return await _send_message(
+        history_messages,
+        model,
         PROMPT_FAREWELL_MESSAGE,
         ChatflowState.IDLE,
         interaction_data,
+        add_acknowledgment=False,
     )
