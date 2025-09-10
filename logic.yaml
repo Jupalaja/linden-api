@@ -152,7 +152,7 @@ graph:
     - id: "CUSTOMER_IN_NON_VALID_STATE"
       action: "send_message"
       message: "$PROMPT_INVALID_STATE"
-      next: "REQUEST_RESOLVED_AWAIT_NEW_MESSAGE"
+      next: "OFFER_BOOK_CALL"
     - id: "REQUEST_RESOLVED_AWAIT_NEW_MESSAGE"
       decision:
         state: "REQUEST_RESOLVED_AWAIT_NEW_MESSAGE"
