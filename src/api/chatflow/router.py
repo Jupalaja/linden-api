@@ -102,7 +102,13 @@ async def handle(
         msg.model_dump(mode="json", exclude_none=True) for msg in history_messages
     ]
     # Append the new state. To ensure SQLAlchemy detects the change, we re-assign the list.
-    interaction.states = interaction.states + [s.value for s in new_states]
+    current_states = list(interaction.states)
+    for state in new_states:
+        current_states.append(state.value)
+        logger.info(
+            f"Session {session_id}: State added: {state.value}. Full state list: {current_states}"
+        )
+    interaction.states = current_states
     interaction.interaction_data = interaction_data
 
     await db.commit()
