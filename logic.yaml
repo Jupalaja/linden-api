@@ -162,14 +162,14 @@ graph:
       message: "$PROMPT_OFFER_BOOK_CALL"
       decision:
         state: "OFFER_BOOK_CALL"
-        user_reply: "SENT_BOOK_CALL_OFFER"
-    - id: "SENT_BOOK_CALL_OFFER"
+        user_reply: "AWAITING_BOOK_CALL_OFFER_RESPONSE"
+    - id: "AWAITING_BOOK_CALL_OFFER_RESPONSE"
       action: "use_tools"
       tools:
         - name: "user_accepts_book_call"
           type: "boolean-toggle"
       decision:
-        state: "SENT_BOOK_CALL_OFFER"
+        state: "AWAITING_BOOK_CALL_OFFER_RESPONSE"
         user_accepts_book_call:_true: "BOOK_CALL_LINK_SENT"
         user_accepts_book_call:_false: "BOOK_CALL_OFFER_DECLINED"
     - id: "BOOK_CALL_LINK_SENT"

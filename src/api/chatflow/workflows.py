@@ -394,7 +394,7 @@ async def offer_book_call_workflow(
         history_messages,
         model,
         PROMPT_OFFER_BOOK_CALL,
-        ChatflowState.SENT_BOOK_CALL_OFFER,
+        ChatflowState.AWAITING_BOOK_CALL_OFFER_RESPONSE,
         interaction_data,
     )
 
@@ -408,7 +408,7 @@ async def request_resolved_workflow(
     return [], ChatflowState.CLASSIFYING_INTENT, None, interaction_data
 
 
-async def sent_book_call_offer_workflow(
+async def await_book_call_response_workflow(
     history_messages: list[InteractionMessage],
     interaction_data: dict,
     model: BaseChatModel,
