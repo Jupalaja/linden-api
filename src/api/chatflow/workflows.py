@@ -27,7 +27,7 @@ async def _send_message(
             history_messages,
             model,
             system_prompt=CHATFLOW_SYSTEM_PROMPT,
-            context=PROMPT_FOR_ACKNOWLEDGEMENT,
+            context=INSTRUCTION_FOR_ACKNOWLEDGEMENT,
         )
         if acknowledgment and acknowledgment.strip():
             full_message = f"{acknowledgment}\n\n{message}"
@@ -119,7 +119,7 @@ async def provide_condition_information_workflow(
     interaction_data: dict,
     model: BaseChatModel,
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
-    context = f"{PROMPT_ANSWER_ABOUT_CONDITION}\n\n{CONDITIONS_DATA}"
+    context = f"{INSTRUCTION_ANSWER_ABOUT_CONDITION}\n\n{CONDITIONS_DATA}"
     response_text = await generate_response_text(
         history_messages, model, CHATFLOW_SYSTEM_PROMPT, context=context
     )
@@ -173,7 +173,7 @@ async def recommended_doctor_workflow(
         "send_doctor_information", "Our doctors would be happy to help with your condition."
     )
 
-    context = f"{PROMPT_RECOMMEND_DOCTOR}\n\nDoctor recommendation: {doctor_recommendation}"
+    context = f"{INSTRUCTION_RECOMMEND_DOCTOR}\n\nDoctor recommendation: {doctor_recommendation}"
     response_text = await generate_response_text(
         history_messages,
         model,
