@@ -468,11 +468,12 @@ async def book_call_declined_workflow(
     interaction_data: dict,
     model: BaseChatModel,
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
+    full_message = f"{PROMPT_PROVIDE_CONTACT_INFO}\n\n{PROMPT_OFFER_NEWSLETTER}"
     return await _send_message(
         history_messages,
         model,
-        PROMPT_PROVIDE_CONTACT_INFO,
-        ChatflowState.CONVERSATION_FINISHED_OFFER_NEWSLETTER,
+        full_message,
+        ChatflowState.AWAITING_NEWSLETTER_RESPONSE,
         interaction_data,
     )
 
@@ -488,24 +489,11 @@ async def book_call_link_sent_workflow(
     )
     # The send_book_call_link tool returns the message to send
     response_text = tool_results.get("send_book_call_link", "Here's the booking link: https://bookinglink.com/")
+    full_message = f"{response_text}\n\n{PROMPT_OFFER_NEWSLETTER}"
     return await _send_message(
         history_messages,
         model,
-        response_text,
-        ChatflowState.CONVERSATION_FINISHED_OFFER_NEWSLETTER,
-        interaction_data,
-    )
-
-
-async def conversation_finished_workflow(
-    history_messages: list[InteractionMessage],
-    interaction_data: dict,
-    model: BaseChatModel,
-) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
-    return await _send_message(
-        history_messages,
-        model,
-        PROMPT_OFFER_NEWSLETTER,
+        full_message,
         ChatflowState.AWAITING_NEWSLETTER_RESPONSE,
         interaction_data,
     )
