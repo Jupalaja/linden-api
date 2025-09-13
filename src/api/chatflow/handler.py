@@ -61,12 +61,7 @@ async def handle_chatflow(
         ChatflowState.FINAL_STATE: final_state_workflow,
     }
 
-    # Prepending introduction message for new conversations
     all_new_messages = []
-    if len(history_messages) == 1 and history_messages[0].role == InteractionType.USER:
-        all_new_messages.append(
-            InteractionMessage(role=InteractionType.MODEL, message=LINDEN_INTRODUCTION_MESSAGE)
-        )
 
     next_state = current_state
     final_tool_call = None

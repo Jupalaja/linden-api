@@ -46,7 +46,12 @@ async def idle_workflow(
     interaction_data: dict,
     model: BaseChatModel,
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
-    return [], ChatflowState.AWAITING_MESSAGE, None, interaction_data
+    return (
+        [InteractionMessage(role=InteractionType.MODEL, message=LINDEN_INTRODUCTION_MESSAGE)],
+        ChatflowState.AWAITING_MESSAGE,
+        None,
+        interaction_data,
+    )
 
 
 async def awaiting_message_workflow(
