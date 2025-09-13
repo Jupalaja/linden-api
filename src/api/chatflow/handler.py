@@ -81,6 +81,10 @@ async def handle_chatflow(
             )
             workflow_func = intent_classification_workflow
 
+        logger.info(
+            f"Session {session_id}: Executing workflow for state {next_state}: {workflow_func.__name__}"
+        )
+
         # The history for the tool call should include messages generated so far in this turn
         current_turn_history = history_messages + all_new_messages
 
