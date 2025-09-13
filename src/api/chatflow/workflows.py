@@ -513,7 +513,14 @@ async def await_newsletter_response_workflow(
         return [], ChatflowState.MAILING_LIST_OFFER_ACCEPTED, None, interaction_data
 
     # If user declines, we can end the conversation.
-    return [], ChatflowState.FINAL_STATE, None, interaction_data
+    return await _send_message(
+        history_messages,
+        model,
+        PROMPT_FAREWELL_MESSAGE,
+        ChatflowState.IDLE,
+        interaction_data,
+        add_acknowledgment=True,
+    )
 
 
 async def mailing_list_accepted_workflow(
@@ -527,25 +534,11 @@ async def mailing_list_accepted_workflow(
     )
     # The save_to_mailing_list tool returns a confirmation message
     response_text = tool_results.get("save_to_mailing_list", "Thank you for subscribing to our mailing list!")
+    full_message = f"{response_text}\n\n{PROMPT_FAREWELL_MESSAGE}"
     # After saving, conversation can be considered idle/ended
     return (
-        [InteractionMessage(role=InteractionType.MODEL, message=response_text)],
-        ChatflowState.FINAL_STATE,
+        [InteractionMessage(role=InteractionType.MODEL, message=full_message)],
+        ChatflowState.IDLE,
         None,
         interaction_data,
-    )
-
-
-async def final_state_workflow(
-    history_messages: list[InteractionMessage],
-    interaction_data: dict,
-    model: BaseChatModel,
-) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
-    return await _send_message(
-        history_messages,
-        model,
-        PROMPT_FAREWELL_MESSAGE,
-        ChatflowState.IDLE,
-        interaction_data,
-        add_acknowledgment=False,
     )
