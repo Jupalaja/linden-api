@@ -322,7 +322,7 @@ async def provided_faq_workflow(
     interaction_data: dict,
     model: BaseChatModel,
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
-    context = f"{PROMPT_GENERAL_FAQ_QUESTION}\n\n{FAQ_DATA}"
+    context = f"{INSTRUCTION_GENERAL_FAQ_QUESTION}\n\n{FAQ_DATA}"
     response_text = await generate_response_text(
         history_messages, model, CHATFLOW_SYSTEM_PROMPT, context=context
     )
