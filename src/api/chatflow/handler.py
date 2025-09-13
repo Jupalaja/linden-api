@@ -1,5 +1,3 @@
-from typing import Optional
-
 from .workflows import *
 from src.shared.enums import InteractionType
 from src.shared.schemas import InteractionMessage
@@ -10,6 +8,7 @@ logger = logging.getLogger(__name__)
 # Define states that should pause the conversation flow and await user input
 STATES_AWAITING_USER_INPUT = {
     ChatflowState.AWAITING_MESSAGE,
+    ChatflowState.ASK_USER_DATA,
     ChatflowState.GET_USER_DATA,
     ChatflowState.CLASSIFYING_INTENT,
     ChatflowState.ASKED_STATE,
