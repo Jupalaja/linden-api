@@ -295,8 +295,9 @@ async def provided_faq_workflow(
     interaction_data: dict,
     model: BaseChatModel,
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
+    context = f"{PROMPT_GENERAL_FAQ_QUESTION}\n\n{FAQ_DATA}"
     response_text = await generate_response_text(
-        history_messages, model, CHATFLOW_SYSTEM_PROMPT, context=FAQ_DATA
+        history_messages, model, CHATFLOW_SYSTEM_PROMPT, context=context
     )
     return (
         [InteractionMessage(role=InteractionType.MODEL, message=response_text)],
@@ -373,7 +374,7 @@ async def validate_state_workflow(
     )
     valid = tool_results.get("is_valid_state", False)
     if valid:
-        next_state = ChatflowState.OFFER_BOOK_CALL
+        next_state = ChatflowState.BOOK_CALL_LINK_SENT
         return [], next_state, None, interaction_data
     else:
         return await _send_message(
@@ -451,10 +452,11 @@ async def book_call_link_sent_workflow(
     )
     # The send_book_call_link tool returns the message to send
     response_text = tool_results.get("send_book_call_link", "Here's the booking link: https://bookinglink.com/")
-    return (
-        [InteractionMessage(role=InteractionType.MODEL, message=response_text)],
+    return await _send_message(
+        history_messages,
+        model,
+        response_text,
         ChatflowState.CONVERSATION_FINISHED_OFFER_NEWSLETTER,
-        None,
         interaction_data,
     )
 
