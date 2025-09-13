@@ -67,13 +67,17 @@ async def ask_user_data_workflow(
     interaction_data: dict,
     model: BaseChatModel,
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
-    return await _send_message(
+    response_text = await generate_response_text(
         history_messages,
         model,
-        PROMPT_ASK_USER_DATA,
+        CHATFLOW_SYSTEM_PROMPT,
+        context=INSTRUCTION_ASK_USER_DATA,
+    )
+    return (
+        [InteractionMessage(role=InteractionType.MODEL, message=response_text)],
         ChatflowState.GET_USER_DATA,
+        None,
         interaction_data,
-        add_acknowledgment=False,
     )
 
 
