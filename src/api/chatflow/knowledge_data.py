@@ -49,27 +49,6 @@ Hours: 9:00 AM – 5:00 PM (with evening appointments available Thursdays until 
 ## How to Become a New Patient 
 Becoming a patient at Aya Naturopathic Medicine starts with a free 15-minute discovery call. This gives the prospective patient a chance to ask questions, explain their goals, and learn how one of our doctors would approach their specific concerns.
 
-### 🪜 Step-by-Step Onboarding Process
-
-1. **Schedule a free discovery call**:
-    
-    [Book here](https://bookinglink.com/)
-    
-2. **After booking**:
-    
-    Discovery call intake forms will be sent via email.
-    
-3. **During the call**:
-    
-    The doctor will listen, provide insight into our approach, and help determine next steps.
-    
-4. **If appropriate**:
-    
-    The patient will be invited to move forward with a new patient package, which includes:
-    
-    - One 90-minute intake consultation
-    - Two 45-minute follow-up visits
-
 ### 🌐 Who We See
 - Patients must reside in NH, ME, MA, or CT to see either doctor.
 - California residents may see Dr. Silva via telehealth.
