@@ -54,19 +54,46 @@ async def awaiting_message_workflow(
     interaction_data: dict,
     model: BaseChatModel,
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
-    return [], ChatflowState.AWAITING_USER_DATA, None, interaction_data
+    return [], ChatflowState.ASK_USER_DATA, None, interaction_data
 
 
-async def awaiting_user_data_workflow(
+async def ask_user_data_workflow(
     history_messages: list[InteractionMessage],
     interaction_data: dict,
     model: BaseChatModel,
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
-    if not interaction_data.get("user_data_form_sent"):
-        interaction_data["user_data_form_sent"] = True
-        return [], ChatflowState.AWAITING_USER_DATA, "send_user_data_form", interaction_data
-    else:
-        return [], ChatflowState.CLASSIFYING_INTENT, None, interaction_data
+    return await _send_message(
+        history_messages,
+        model,
+        PROMPT_ASK_USER_DATA,
+        ChatflowState.GET_USER_DATA,
+        interaction_data,
+        add_acknowledgment=False,
+    )
+
+
+async def get_user_data_workflow(
+    history_messages: list[InteractionMessage],
+    interaction_data: dict,
+    model: BaseChatModel,
+) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
+    langchain_messages = get_langchain_history(history_messages)
+    tool_results = await call_single_tool(
+        langchain_messages, model, get_user_data, CHATFLOW_SYSTEM_PROMPT
+    )
+
+    user_data = tool_results.get("get_user_data")
+    if user_data:
+        interaction_data = interaction_data.copy()
+        if "user_data" in interaction_data and isinstance(
+            interaction_data["user_data"], dict
+        ):
+            interaction_data["user_data"] = interaction_data["user_data"].copy()
+            interaction_data["user_data"].update(user_data)
+        else:
+            interaction_data["user_data"] = user_data
+
+    return [], ChatflowState.CLASSIFYING_INTENT, None, interaction_data
 
 
 async def intent_classification_workflow(

@@ -1,4 +1,4 @@
-from typing import Literal
+from typing import Literal, Optional
 from langchain_core.tools import tool
 
 
@@ -187,18 +187,17 @@ def send_book_call_link() -> str:
 
 
 @tool
-def send_user_data_form() -> str:
-    """Use this tool to send a form to collect user contact information for follow-up.
-
-    Use this when:
-    - User wants to be contacted later
-    - User needs more information but isn't ready to book
-    - User wants someone to call them directly
-    - User is interested but needs time to decide
-
-    The form will collect basic contact details so our team can follow up appropriately.
+def get_user_data(name: Optional[str] = None, email: Optional[str] = None) -> dict:
+    """Extracts user's name and email from their message.
+    If the user provides their name and/or email, use this tool to capture it.
+    If they decline or don't provide the information, you can call this tool with no arguments.
     """
-    return "send_user_data_form"
+    user_data = {}
+    if name:
+        user_data["name"] = name
+    if email:
+        user_data["email"] = email
+    return user_data
 
 
 @tool

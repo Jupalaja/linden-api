@@ -9,7 +9,8 @@ logger = logging.getLogger(__name__)
 
 # Define states that should pause the conversation flow and await user input
 STATES_AWAITING_USER_INPUT = {
-    ChatflowState.AWAITING_USER_DATA,
+    ChatflowState.AWAITING_MESSAGE,
+    ChatflowState.GET_USER_DATA,
     ChatflowState.CLASSIFYING_INTENT,
     ChatflowState.ASKED_STATE,
     ChatflowState.AWAITING_BOOK_CALL_OFFER_RESPONSE,
@@ -31,7 +32,8 @@ async def handle_chatflow(
     workflow_map = {
         ChatflowState.IDLE: idle_workflow,
         ChatflowState.AWAITING_MESSAGE: awaiting_message_workflow,
-        ChatflowState.AWAITING_USER_DATA: awaiting_user_data_workflow,
+        ChatflowState.ASK_USER_DATA: ask_user_data_workflow,
+        ChatflowState.GET_USER_DATA: get_user_data_workflow,
         ChatflowState.CLASSIFYING_INTENT: intent_classification_workflow,
         ChatflowState.INTENT_QUESTION_CONDITION: question_condition_workflow,
         ChatflowState.PROVIDE_CONDITION_INFORMATION: provide_condition_information_workflow,
