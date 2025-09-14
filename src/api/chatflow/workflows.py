@@ -417,7 +417,7 @@ async def validate_state_workflow(
             history_messages,
             model,
             PROMPT_INVALID_STATE,
-            ChatflowState.OFFER_BOOK_CALL,
+            ChatflowState.REQUEST_RESOLVED_AWAIT_NEW_MESSAGE,
             interaction_data,
         )
 
