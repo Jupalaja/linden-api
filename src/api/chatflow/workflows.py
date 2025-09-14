@@ -509,18 +509,12 @@ async def await_newsletter_response_workflow(
         langchain_messages, model, user_accepts_newsletter, CHATFLOW_SYSTEM_PROMPT
     )
     accepts = tool_results.get("user_accepts_newsletter", False)
-    if accepts:
-        return [], ChatflowState.MAILING_LIST_OFFER_ACCEPTED, None, interaction_data
-
-    # If user declines, we can end the conversation.
-    return await _send_message(
-        history_messages,
-        model,
-        PROMPT_FAREWELL_MESSAGE,
-        ChatflowState.IDLE,
-        interaction_data,
-        add_acknowledgment=True,
+    next_state = (
+        ChatflowState.MAILING_LIST_OFFER_ACCEPTED
+        if accepts
+        else ChatflowState.MAILING_LIST_OFFER_DECLINED
     )
+    return [], next_state, None, interaction_data
 
 
 async def mailing_list_accepted_workflow(
@@ -541,4 +535,19 @@ async def mailing_list_accepted_workflow(
         ChatflowState.IDLE,
         None,
         interaction_data,
+    )
+
+
+async def mailing_list_declined_workflow(
+    history_messages: list[InteractionMessage],
+    interaction_data: dict,
+    model: BaseChatModel,
+) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
+    return await _send_message(
+        history_messages,
+        model,
+        PROMPT_FAREWELL_MESSAGE,
+        ChatflowState.IDLE,
+        interaction_data,
+        add_acknowledgment=True,
     )

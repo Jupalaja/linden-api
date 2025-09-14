@@ -57,6 +57,7 @@ async def handle_chatflow(
         ChatflowState.BOOK_CALL_LINK_SENT: book_call_link_sent_workflow,
         ChatflowState.AWAITING_NEWSLETTER_RESPONSE: await_newsletter_response_workflow,
         ChatflowState.MAILING_LIST_OFFER_ACCEPTED: mailing_list_accepted_workflow,
+        ChatflowState.MAILING_LIST_OFFER_DECLINED: mailing_list_declined_workflow,
     }
 
     all_new_messages = []
