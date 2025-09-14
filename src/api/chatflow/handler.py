@@ -54,7 +54,7 @@ async def handle_chatflow(
         ChatflowState.REQUEST_RESOLVED_AWAIT_NEW_MESSAGE: request_resolved_workflow,
         ChatflowState.AWAITING_BOOK_CALL_OFFER_RESPONSE: await_book_call_response_workflow,
         ChatflowState.BOOK_CALL_OFFER_DECLINED: book_call_declined_workflow,
-        ChatflowState.BOOK_CALL_LINK_SENT: book_call_link_sent_workflow,
+        ChatflowState.BOOK_CALL_OFFER_ACCEPTED: book_call_link_accepted_workflow,
         ChatflowState.AWAITING_NEWSLETTER_RESPONSE: await_newsletter_response_workflow,
         ChatflowState.MAILING_LIST_OFFER_ACCEPTED: mailing_list_accepted_workflow,
         ChatflowState.MAILING_LIST_OFFER_DECLINED: mailing_list_declined_workflow,

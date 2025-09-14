@@ -410,7 +410,7 @@ async def validate_state_workflow(
     )
     valid = tool_results.get("is_valid_state", False)
     if valid:
-        next_state = ChatflowState.BOOK_CALL_LINK_SENT
+        next_state = ChatflowState.BOOK_CALL_OFFER_ACCEPTED
         return [], next_state, None, interaction_data
     else:
         return await _send_message(
@@ -456,7 +456,7 @@ async def await_book_call_response_workflow(
     )
     accepts = tool_results.get("user_accepts_book_call", False)
     next_state = (
-        ChatflowState.BOOK_CALL_LINK_SENT
+        ChatflowState.BOOK_CALL_OFFER_ACCEPTED
         if accepts
         else ChatflowState.BOOK_CALL_OFFER_DECLINED
     )
@@ -478,7 +478,7 @@ async def book_call_declined_workflow(
     )
 
 
-async def book_call_link_sent_workflow(
+async def book_call_link_accepted_workflow(
     history_messages: list[InteractionMessage],
     interaction_data: dict,
     model: BaseChatModel,

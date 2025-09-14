@@ -177,9 +177,9 @@ graph:
           type: "boolean-toggle"
       decision:
         state: "AWAITING_BOOK_CALL_OFFER_RESPONSE"
-        user_accepts_book_call:_true: "BOOK_CALL_LINK_SENT"
+        user_accepts_book_call:_true: "BOOK_CALL_OFFER_ACCEPTED"
         user_accepts_book_call:_false: "BOOK_CALL_OFFER_DECLINED"
-    - id: "BOOK_CALL_LINK_SENT"
+    - id: "BOOK_CALL_OFFER_ACCEPTED"
       action: "use_special_function"
       function_name: "send_book_call_link"
       next: "CONVERSATION_FINISHED_OFFER_NEWSLETTER"
