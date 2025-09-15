@@ -181,9 +181,9 @@ def send_book_call_link() -> str:
     - Discovery call intake forms sent automatically after booking
     - Completely free with no obligation
 
-    The booking link is: https://ayanaturopathicmedicine.practicebetter.io/#/66fb4a41904772d2c40fe3fc/bookings?r=6706dd2ad30b811dc03d2644&step=services
+    The booking link is: https://ayanaturopathicmedicine.practicebetter.io/#/66fb4a41904772d2c40fe3fc/bookings?r=6706dd2ad30b811dc03d2644&step=date
     """
-    return "Here's the **[Link to Book a Discovery Call](https://ayanaturopathicmedicine.practicebetter.io/#/66fb4a41904772d2c40fe3fc/bookings?r=6706dd2ad30b811dc03d2644&step=services)**"
+    return "Here's the **[Link to Book a Discovery Call](https://ayanaturopathicmedicine.practicebetter.io/#/66fb4a41904772d2c40fe3fc/bookings?r=6706dd2ad30b811dc03d2644&step=date)**"
 
 
 @tool

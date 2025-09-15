@@ -520,7 +520,7 @@ async def book_call_link_accepted_workflow(
         langchain_messages, model, send_book_call_link, CHATFLOW_SYSTEM_PROMPT
     )
     # The send_book_call_link tool returns the message to send
-    response_text = tool_results.get("send_book_call_link", "Here's the booking link: https://bookinglink.com/")
+    response_text = tool_results.get("send_book_call_link")
     full_message = f"{response_text}\n\n{PROMPT_OFFER_NEWSLETTER}"
     return await _send_message(
         history_messages,
