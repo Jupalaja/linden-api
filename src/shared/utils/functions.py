@@ -9,6 +9,7 @@ from langchain_core.tools import BaseTool
 
 from src.config import settings
 from src.services.google_sheets import GoogleSheetsService
+from src.shared.enums import InteractionType
 from src.shared.schemas import InteractionMessage
 from src.shared.utils.history import get_langchain_history
 
@@ -121,16 +122,21 @@ async def write_candidato_a_empleo_to_sheet(
             logger.error("Could not find TESTS worksheet.")
             return
 
-        date = datetime.datetime.now().strftime("%Y/%m/%d")
+        date_and_time = datetime.datetime.now().strftime("%Y/%m/%d %H:%M")
         user_data = interaction_data.get("user_data") or {}
         name = user_data.get("name")
         email = user_data.get("email")
 
-        conversation_json = [msg.model_dump(mode="json") for msg in conversation]
-        conversation_str = json.dumps(conversation_json, indent=2)
+        conversation_lines = []
+        for msg in conversation:
+            if msg.role == InteractionType.USER:
+                conversation_lines.append(f"User: {msg.message}")
+            elif msg.role == InteractionType.MODEL:
+                conversation_lines.append(f"Linden: {msg.message}")
+        conversation_str = "\n".join(conversation_lines)
 
         row_to_append = [
-            date,
+            date_and_time,
             name,
             email,
             conversation_str,
