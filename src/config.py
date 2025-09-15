@@ -1,5 +1,5 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 from pydantic import PostgresDsn, field_validator, model_validator
 
 
@@ -39,6 +39,19 @@ class Settings(BaseSettings):
         if isinstance(v, str):
             return v.strip('"')
         return v
+
+    # Google Sheets
+    GOOGLE_SA_TYPE: str = "service_account"
+    GOOGLE_SA_PROJECT_ID: str
+    GOOGLE_SA_PRIVATE_KEY_ID: str
+    GOOGLE_SA_PRIVATE_KEY: str
+    GOOGLE_SA_CLIENT_EMAIL: str
+    GOOGLE_SA_CLIENT_ID: str
+    GOOGLE_SA_AUTH_URI: str
+    GOOGLE_SA_TOKEN_URI: str
+    GOOGLE_SA_AUTH_PROVIDER_X509_CERT_URL: str
+    GOOGLE_SA_CLIENT_X509_CERT_URL: str
+    GOOGLE_SHEET_ID_EXPORT: Optional[str] = None
 
 
     model_config = SettingsConfigDict(

@@ -8,6 +8,7 @@ from src.shared.enums import InteractionType
 class HealthResponse(BaseModel):
     status: str
     db_connection: str
+    sheets_connection: str
 
 
 class InteractionMessage(BaseModel):
