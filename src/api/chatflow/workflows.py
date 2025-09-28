@@ -570,7 +570,7 @@ async def mailing_list_accepted_workflow(
     # After saving, conversation can be considered idle/ended
     return (
         [response_message],
-        ChatflowState.IDLE,
+        ChatflowState.FINAL,
         None,
         interaction_data,
     )
@@ -607,7 +607,7 @@ async def mailing_list_declined_workflow(
 
     return (
         [response_message],
-        ChatflowState.IDLE,
+        ChatflowState.FINAL,
         None,
         interaction_data,
     )
