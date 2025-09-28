@@ -23,16 +23,11 @@ variables:
 
 graph:
   id: "graph_linden"
+
   nodes:
     - id: "IDLE"
       decision:
         state: "IDLE"
-        user_reply: "AWAITING_MESSAGE"
-    - id: "AWAITING_MESSAGE"
-      action: "send_message"
-      message: "$LINDEN_INTRODUCTION_MESSAGE"
-      decision:
-        state: "AWAITING_MESSAGE"
         user_reply: "ASK_USER_DATA"
     - id: "ASK_USER_DATA"
       action: "send_message"

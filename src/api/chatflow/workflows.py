@@ -1,5 +1,4 @@
 import logging
-from typing import Optional
 
 from langchain_core.language_models import BaseChatModel
 
@@ -54,20 +53,11 @@ async def idle_workflow(
     sheets_service: Optional[GoogleSheetsService],
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
     return (
-        [InteractionMessage(role=InteractionType.MODEL, message=LINDEN_INTRODUCTION_MESSAGE)],
-        ChatflowState.AWAITING_MESSAGE,
+        [],
+        ChatflowState.ASK_USER_DATA,
         None,
         interaction_data,
     )
-
-
-async def awaiting_message_workflow(
-    history_messages: list[InteractionMessage],
-    interaction_data: dict,
-    model: BaseChatModel,
-    sheets_service: Optional[GoogleSheetsService],
-) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
-    return [], ChatflowState.ASK_USER_DATA, None, interaction_data
 
 
 async def ask_user_data_workflow(

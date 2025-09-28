@@ -2,7 +2,6 @@ from typing import Optional
 
 from .workflows import *
 from src.services.google_sheets import GoogleSheetsService
-from src.shared.enums import InteractionType
 from src.shared.schemas import InteractionMessage
 from langchain_core.language_models import BaseChatModel
 
@@ -10,7 +9,6 @@ logger = logging.getLogger(__name__)
 
 # Define states that should pause the conversation flow and await user input
 STATES_AWAITING_USER_INPUT = {
-    ChatflowState.AWAITING_MESSAGE,
     ChatflowState.ASK_USER_DATA,
     ChatflowState.GET_USER_DATA,
     ChatflowState.CLASSIFYING_INTENT,
@@ -33,7 +31,6 @@ async def handle_chatflow(
 
     workflow_map = {
         ChatflowState.IDLE: idle_workflow,
-        ChatflowState.AWAITING_MESSAGE: awaiting_message_workflow,
         ChatflowState.ASK_USER_DATA: ask_user_data_workflow,
         ChatflowState.GET_USER_DATA: get_user_data_workflow,
         ChatflowState.CLASSIFYING_INTENT: intent_classification_workflow,
