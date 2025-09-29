@@ -61,17 +61,6 @@ async def handle(
         )
         db.add(interaction)
 
-    if current_state == ChatflowState.FINAL:
-        logger.info(
-            f"Session {session_id} is in FINAL state. Not processing new message."
-        )
-        return InteractionResponse(
-            sessionId=session_id,
-            messages=[],
-            toolCall=None,
-            states=interaction.states,
-        )
-
     # Append new user message to history
     history_messages.append(user_message)
 

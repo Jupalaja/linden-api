@@ -576,6 +576,16 @@ async def mailing_list_accepted_workflow(
     )
 
 
+async def final_workflow(
+    history_messages: list[InteractionMessage],
+    interaction_data: dict,
+    model: BaseChatModel,
+    sheets_service: Optional[GoogleSheetsService],
+) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
+    # This state is terminal, it does not produce any message and keeps the same state.
+    return [], ChatflowState.FINAL, None, interaction_data
+
+
 async def mailing_list_declined_workflow(
     history_messages: list[InteractionMessage],
     interaction_data: dict,
