@@ -4,7 +4,7 @@ variables:
   LINDEN_INTRODUCTION_MESSAGE: "Hi, I’m Linden, the virtual assistant for Aya Naturopathic Medicine. How can I help you today?"
   OUTPUT_MESSAGE_EMERGENCY: "If this is a medical emergency, please call 911 or go to your nearest emergency room."
   PROMPT_ANSWER_ABOUT_CONDITION: "Here's the answer to your question"
-  PROMPT_ASK_STATE: "Before I set you up, can I confirm what state you’re in? Our doctors currently see patients in NH, MA, CT, and ME—and Dr. Silva also sees patients in California."
+  PROMPT_ASK_STATE: "Before I set you up, can I confirm what state you’re in? Our doctors currently see patients in NH, MA, CT, and ME — and Dr. Silva also sees patients in California."
   PROMPT_ASK_USER_DATA: "I'll be glad to assist you. Before we continue, who do I have the pleasure of speaking with? Could you also share your email address?"
   PROMPT_CONDITION_NOT_TREATED: "Because of the nature of your condition, one of our doctors would need to weigh in to determine whether we’re the right fit to support you. We’d love for you to email us at info@ayanaturopathic.com with a few details, and our team will let you know if scheduling a visit is appropriate.\n\n\nIf it turns out that we’re not the best match for your needs, we want to make sure you’re still supported. You can explore the American Association of Naturopathic Physicians’ Find a Doctor Directory (link) to connect with a naturopathic physician who specializes in your condition.”\n\n\nhttps://naturopathic.org/search/custom.asp?id=5613"
   PROMPT_EVENT_INFORMATION: "Here is the information about our next events"
