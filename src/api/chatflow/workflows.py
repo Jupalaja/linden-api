@@ -294,14 +294,19 @@ async def ask_state_workflow(
     model: BaseChatModel,
     sheets_service: Optional[GoogleSheetsService],
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
-
+    response_text = await generate_response_text(
+        history_messages,
+        model,
+        CHATFLOW_SYSTEM_PROMPT,
+        context=INSTRUCTION_ASK_STATE,
+    )
     return await _send_message(
         history_messages,
         model,
-        PROMPT_ASK_STATE,
+        response_text,
         ChatflowState.ASKED_STATE,
         interaction_data,
-        add_acknowledgment=True,
+        add_acknowledgment=False,
     )
 
 
