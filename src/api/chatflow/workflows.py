@@ -75,21 +75,23 @@ async def ask_user_data_workflow(
     if doctor_recommendation:
         full_message_parts.append(doctor_recommendation)
 
-    full_message_parts.append(INSTRUCTION_ASK_USER_DATA)
-    full_message = "\n\n".join(full_message_parts)
-
-    add_ack =  bool(condition_info or doctor_recommendation)
-
-    response_text = await generate_response_text(
+    ask_user_data_text = await generate_response_text(
         history_messages,
         model,
         CHATFLOW_SYSTEM_PROMPT,
-        context=full_message,
+        context=INSTRUCTION_ASK_USER_DATA,
     )
+    if ask_user_data_text:
+        full_message_parts.append(ask_user_data_text)
+
+    full_message = "\n\n".join(full_message_parts)
+
+    add_ack = bool(condition_info or doctor_recommendation)
+
     return await _send_message(
         history_messages,
         model,
-        response_text,
+        full_message,
         ChatflowState.GET_USER_DATA,
         interaction_data,
         add_acknowledgment=add_ack,
