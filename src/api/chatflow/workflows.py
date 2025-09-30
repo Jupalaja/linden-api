@@ -54,7 +54,7 @@ async def idle_workflow(
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
     return (
         [],
-        ChatflowState.ASK_USER_DATA,
+        ChatflowState.CLASSIFYING_INTENT,
         None,
         interaction_data,
     )
@@ -66,17 +66,32 @@ async def ask_user_data_workflow(
     model: BaseChatModel,
     sheets_service: Optional[GoogleSheetsService],
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
+    condition_info = interaction_data.pop("condition_info_response", "")
+    doctor_recommendation = interaction_data.pop("doctor_recommendation_response", "")
+
+    full_message_parts = []
+    if condition_info:
+        full_message_parts.append(condition_info)
+    if doctor_recommendation:
+        full_message_parts.append(doctor_recommendation)
+
+    full_message = f"{INSTRUCTION_ASK_USER_DATA}\n\n".join(part for part in full_message_parts if part)
+
+    add_ack = not (condition_info or doctor_recommendation)
+
     response_text = await generate_response_text(
         history_messages,
         model,
         CHATFLOW_SYSTEM_PROMPT,
-        context=INSTRUCTION_ASK_USER_DATA,
+        context=full_message,
     )
-    return (
-        [InteractionMessage(role=InteractionType.MODEL, message=response_text)],
+    return await _send_message(
+        history_messages,
+        model,
+        response_text,
         ChatflowState.GET_USER_DATA,
-        None,
         interaction_data,
+        add_acknowledgment=add_ack,
     )
 
 
@@ -102,7 +117,7 @@ async def get_user_data_workflow(
         else:
             interaction_data["user_data"] = user_data
 
-    return [], ChatflowState.CLASSIFYING_INTENT, None, interaction_data
+    return [], ChatflowState.BOOK_CALL_NOT_OFFERED_YET, None, interaction_data
 
 
 async def intent_classification_workflow(
@@ -119,7 +134,7 @@ async def intent_classification_workflow(
 
     state_map = {
         "is_emergency": ChatflowState.INVALID_REQUEST_EMERGENCY,
-        "is_potential_patient": ChatflowState.BOOK_CALL_NOT_OFFERED_YET,
+        "is_potential_patient": ChatflowState.ASK_USER_DATA,
         "is_question_about_condition": ChatflowState.INTENT_QUESTION_CONDITION,
         "is_question_event": ChatflowState.INTENT_EVENT_QUESTION,
         "is_frequently_asked_question": ChatflowState.INTENT_FAQ,
@@ -223,9 +238,10 @@ async def recommended_doctor_workflow(
         context=context,
     )
     interaction_data["doctor_recommendation_response"] = response_text
+
     return (
         [],
-        ChatflowState.BOOK_CALL_NOT_OFFERED_YET,
+        ChatflowState.ASK_USER_DATA,
         None,
         interaction_data,
     )
@@ -278,27 +294,14 @@ async def ask_state_workflow(
     model: BaseChatModel,
     sheets_service: Optional[GoogleSheetsService],
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
-    condition_info = interaction_data.pop("condition_info_response", "")
-    doctor_recommendation = interaction_data.pop("doctor_recommendation_response", "")
-
-    full_message_parts = []
-    if condition_info:
-        full_message_parts.append(condition_info)
-    if doctor_recommendation:
-        full_message_parts.append(doctor_recommendation)
-    full_message_parts.append(PROMPT_ASK_STATE)
-
-    full_message = "\n\n".join(part for part in full_message_parts if part)
-
-    add_ack = not (condition_info or doctor_recommendation)
 
     return await _send_message(
         history_messages,
         model,
-        full_message,
+        PROMPT_ASK_STATE,
         ChatflowState.ASKED_STATE,
         interaction_data,
-        add_acknowledgment=add_ack,
+        add_acknowledgment=True,
     )
 
 
