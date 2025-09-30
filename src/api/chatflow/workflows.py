@@ -75,9 +75,10 @@ async def ask_user_data_workflow(
     if doctor_recommendation:
         full_message_parts.append(doctor_recommendation)
 
-    full_message = f"{INSTRUCTION_ASK_USER_DATA}\n\n".join(part for part in full_message_parts if part)
+    full_message_parts.append(INSTRUCTION_ASK_USER_DATA)
+    full_message = "\n\n".join(full_message_parts)
 
-    add_ack = not (condition_info or doctor_recommendation)
+    add_ack =  bool(condition_info or doctor_recommendation)
 
     response_text = await generate_response_text(
         history_messages,
