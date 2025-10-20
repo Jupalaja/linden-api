@@ -31,7 +31,15 @@ We do not provide:
 - **Pediatrics under age 6** – We currently do not treat young children below age 6.
 - **Personality disorders, eating disorders, or unmanaged substance use**
 - **Severe psychiatric conditions** – Including schizophrenia or psychosis that requires close psychiatric supervision
-- **Primary immunodeficiency disorders** – Such as SCID or CVID"""
+- **Primary immunodeficiency disorders** – Such as SCID or CVID
+
+## Our doctors
+### Dr. Sarah Jeffrey
+Dr. Jeffrey is passionate about a holistic, root-cause approach to ADHD, anxiety, depression, insomnia and Alzheimer’s prevention. She has specialized training in the Walsh Protocol and Bredesen Protocol, ensuring her patients receive the most evidence-based and personalized care.
+
+### Dr. Luciana Silva
+Dr. Silva is deeply passionate about using root-cause medicine to support hormonal health and believes in the powerful connection between the mind and body. With a natural, whole-person approach, she helps patients navigate a range of hormone-related concerns—including period problems, infertility, menopause, and andropause—as well as broader imbalances that affect energy, mood, and vitality. 
+"""
 
 REST_OF_FAQ = """## Clinic Hours (For Linden’s Use)
 Aya Naturopathic Medicine offers both telehealth and in-person care, with schedules varying by doctor and day of the week.

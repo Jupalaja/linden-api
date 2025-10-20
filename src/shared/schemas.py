@@ -29,4 +29,4 @@ class InteractionResponse(BaseModel):
     sessionId: str
     messages: List[InteractionMessage]
     toolCall: Optional[str] = None
-    states: List[str] = None
+    states: List[str]
