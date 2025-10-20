@@ -99,6 +99,10 @@ Plans typically keep monthly costs close to $100/month.
 - **Accepted payment methods**:
     - Credit cards
     - HSA/FSA cards
+    
+    
+## Information about the AANP
+You can connect with a naturopathic physician through the American Association of Naturopathic Physicians Find a Doctor Directory at https://naturopathic.org/search/custom.asp?id=5613
 """
 
 FAQ_DATA = f"{CONDITIONS_DATA}\n\n{REST_OF_FAQ}"
