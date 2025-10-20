@@ -21,7 +21,6 @@ PROMPT_FRUSTRATED_CUSTOMER_OFFER_BOOK_CALL="I’m sorry I wasn’t able to help 
 ACKNOWLEDGMENT_MESSAGE= "It's always a pleasure to help, let me know if if there's anything else I can assist you with"
 PROMPT_PROVIDE_CONTACT_INFO="No worries, you can always email us at *info@ayanaturopathic.com* or call us at *(207) 387-0021*"
 PROMPT_OFFER_NEWSLETTER="Would you also like to join our mailing list? We share helpful health tips, seasonal recipes, and clinic updates."
-INSTRUCTION_ASK_STATE="Politely acknowledge the user's provided information. Then, ask for their state of residence. Clearly state that our doctors are licensed to see patients in NH, MA, CT, and ME, and that Dr. Silva is also available for patients in California. Do not include include information about services or health concerns."
 PROMPT_INVALID_STATE="It looks like you're not in a state where our doctors are currently licensed to provide care. But you can still: \n- Sign up for our newsletter to receive health tips, recipes, and upcoming retreat info\n- Explore the AANP Find a Doctor tool to locate a licensed naturopath in your area"
 PROMPT_QUESTION_IN_PERSON="Yes! We see patients in person at Whole Life Healthcare in Newington, NH. Dr. Jeffrey is currently there on Fridays, and starting in August, both Dr. Jeffrey and Dr. Silva will offer in-person care Tuesday through Friday."
 PROMPT_QUESTION_PRICEY_SERVICE="We’re happy to talk through what’s included and how care can be structured around your goals. A great next step is to book a free 15-minute discovery call."

@@ -120,7 +120,7 @@ async def get_user_data_workflow(
         else:
             interaction_data["user_data"] = user_data
 
-    return [], ChatflowState.BOOK_CALL_NOT_OFFERED_YET, None, interaction_data
+    return [], ChatflowState.ASKED_STATE, None, interaction_data
 
 
 async def intent_classification_workflow(
@@ -290,27 +290,6 @@ async def faq_workflow(
     )  # Fallback to faq-information
     return [], next_state, None, interaction_data
 
-
-async def ask_state_workflow(
-    history_messages: list[InteractionMessage],
-    interaction_data: dict,
-    model: BaseChatModel,
-    sheets_service: Optional[GoogleSheetsService],
-) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
-    response_text = await generate_response_text(
-        history_messages,
-        model,
-        CHATFLOW_SYSTEM_PROMPT,
-        context=INSTRUCTION_ASK_STATE,
-    )
-    return await _send_message(
-        history_messages,
-        model,
-        response_text,
-        ChatflowState.ASKED_STATE,
-        interaction_data,
-        add_acknowledgment=False,
-    )
 
 
 async def condition_not_treated_workflow(

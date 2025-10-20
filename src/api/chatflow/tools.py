@@ -53,6 +53,7 @@ def is_valid_state(is_valid: bool) -> bool:
     - California (CA) - Dr. Silva ONLY via telehealth
 
     Set is_valid to True if user's state is in the above list, False otherwise.
+    If the user has not provided a state of residence in the conversation, assume it is valid and set is_valid to True.
     For California residents, they can only see Dr. Silva.
 
     Args:

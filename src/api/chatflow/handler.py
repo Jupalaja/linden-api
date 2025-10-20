@@ -42,7 +42,6 @@ async def handle_chatflow(
         ChatflowState.RECOMMENDED_DOCTOR: recommended_doctor_workflow,
         ChatflowState.CUSTOMER_ACKNOWLEDGES_RESPONSE: customer_acknowledges_workflow,
         ChatflowState.INTENT_FAQ: faq_workflow,
-        ChatflowState.BOOK_CALL_NOT_OFFERED_YET: ask_state_workflow,
         ChatflowState.CONDITION_NOT_TREATED_SEND_CONTACT_INFO: condition_not_treated_workflow,
         ChatflowState.INTENT_EVENT_QUESTION: event_question_workflow,
         ChatflowState.PROVIDED_FAQ_INFORMATION: provided_faq_workflow,
