@@ -12,7 +12,7 @@ class Interaction(Base):
     __tablename__ = "interactions"
 
     session_id = Column(String, primary_key=True, index=True)
+    practice_id = Column(String, index=True, nullable=True)
     messages = Column(JSONB, nullable=False)
     states = Column(JSONB, nullable=False, server_default='["IDLE"]')
     interaction_data = Column(JSON, nullable=True)
-    is_deleted = Column(Boolean, default=False, nullable=False)

@@ -48,6 +48,8 @@ async def handle(
         last_state = interaction.states[-1] if interaction.states else None
         current_state = ChatflowState(last_state) if last_state else ChatflowState.IDLE
         interaction_data = interaction.interaction_data or {}
+        if not interaction.practice_id and interaction_request.practiceId:
+            interaction.practice_id = interaction_request.practiceId
     else:
         # New interaction
         history_messages = []
@@ -55,6 +57,7 @@ async def handle(
         interaction_data = {}
         interaction = Interaction(
             session_id=session_id,
+            practice_id=interaction_request.practiceId,
             messages=[],
             states=[ChatflowState.IDLE.value],
             interaction_data=interaction_data,

@@ -20,6 +20,7 @@ class InteractionMessage(BaseModel):
 
 class InteractionRequest(BaseModel):
     sessionId: str = Field(..., min_length=4)
+    practiceId: Optional[str] = None
     message: InteractionMessage
     user_data: Optional[Dict[str, Any]] = None
 
