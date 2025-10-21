@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 from pydantic import BaseModel, Field
 from typing import List, Optional, Dict, Any
 
-from src.shared.enums import InteractionType
+from src.shared.enums import InteractionType, SourceType
 
 
 class HealthResponse(BaseModel):
@@ -30,3 +30,18 @@ class InteractionResponse(BaseModel):
     messages: List[InteractionMessage]
     toolCall: Optional[str] = None
     states: List[str]
+
+
+class SourceData(BaseModel):
+    webPageURL: Optional[str] = None
+
+
+class CreateEmbeddingsRequest(BaseModel):
+    practiceId: str
+    sourceType: SourceType
+    sourceData: SourceData
+
+
+class CreateEmbeddingsResponse(BaseModel):
+    status: str
+    message: str

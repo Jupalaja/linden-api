@@ -4,6 +4,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 
 from src.api.chatflow.router import router as chatflow_router
+from src.api.embeddings.router import router as embeddings_router
 from src.config import settings
 from src.database.db import engine, test_db_connection
 from src.services.google_sheets import GoogleSheetsService
@@ -56,6 +57,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(title=settings.PROJECT_NAME, lifespan=lifespan)
 
 app.include_router(chatflow_router, prefix="/api/v1", tags=["Chatflow"])
+app.include_router(embeddings_router, prefix="/api/v1", tags=["Embeddings"])
 
 
 @app.get("/health", response_model=HealthResponse, tags=["Health"])

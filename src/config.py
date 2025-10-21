@@ -7,6 +7,7 @@ class Settings(BaseSettings):
     PROJECT_NAME: str = "API FastAPI"
     LOG_LEVEL: str = "DEBUG"
 
+    OPENAI_API_KEY: str
     OPENAI_MODEL: str
     GEMINI_MODEL: str
 
@@ -52,6 +53,14 @@ class Settings(BaseSettings):
     GOOGLE_SA_AUTH_PROVIDER_X509_CERT_URL: str
     GOOGLE_SA_CLIENT_X509_CERT_URL: str
     GOOGLE_SHEET_ID_EXPORT: Optional[str] = None
+
+    # Firecrawl
+    FIRECRAWL_API_KEY: Optional[str] = None
+
+    # Chroma Cloud
+    CHROMA_CLOUD_API_KEY: Optional[str] = None
+    CHROMA_CLOUD_TENANT: Optional[str] = None
+    CHROMA_CLOUD_DATABASE: Optional[str] = None
 
 
     model_config = SettingsConfigDict(
