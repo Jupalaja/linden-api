@@ -9,13 +9,17 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 from src.config import settings
 from src.services.vector_store import get_vector_store
-from src.shared.constants import INVALID_UNICODE_CLEANUP_REGEX, VECTOR_EMBEDDINGS_SIMILARITY_THRESHOLD
+from src.shared.constants import (
+    INVALID_UNICODE_CLEANUP_REGEX,
+    VECTOR_EMBEDDINGS_SIMILARITY_THRESHOLD,
+    VECTOR_EMBEDDINGS_QUERY_SYSTEM_PROMPT
+)
 from src.shared.enums import SourceType
 
 logger = logging.getLogger(__name__)
 
 
-def store_data_from_website(website: str):
+def store_data_from_website(website: str, practice_id: str):
     """
     Scrapes a website and stores its content in Chroma.
     """
@@ -52,6 +56,7 @@ def store_data_from_website(website: str):
     for i, doc in enumerate(docs):
         doc_id = f"{sanitized_url}_{i}"
         doc.metadata["doc_id"] = doc_id
+        doc.metadata["practice_id"] = practice_id
         doc.metadata["source_type"] = SourceType.WEB_PAGE.value
         doc.metadata["source_page_title"] = getattr(scraped_website.metadata, 'title', 'No Title')
         doc.metadata["source_url"] = website
@@ -90,13 +95,14 @@ def store_data_from_website(website: str):
         )
 
 
-def retrieve_data(query: str, filters: Optional[Dict[str, Any]] = None) -> str:
+def retrieve_data(query: str, practice_id: str, filters: Optional[Dict[str, Any]] = None) -> str:
     """
     Retrieves data from the vector store based on a query and optional filters,
     and generates a response using an LLM.
 
     Args:
         query: The user's question.
+        practice_id: The practice ID to filter the search results.
         filters: A dictionary of metadata to filter the search results.
 
     Returns:
@@ -104,13 +110,16 @@ def retrieve_data(query: str, filters: Optional[Dict[str, Any]] = None) -> str:
     """
     vector_store = get_vector_store()
 
+    search_filters = filters.copy() if filters else {}
+    search_filters["practice_id"] = practice_id
+
     # Perform a similarity search with optional filters
     results_with_scores = vector_store.similarity_search_with_score(
-        query=query, k=3, filter=filters
+        query=query, k=3, filter=search_filters
     )
 
     if not results_with_scores:
-        logger.warning(f"No results found for query: '{query}' with filters: {filters}")
+        logger.warning(f"No results found for query: '{query}' with filters: {search_filters}")
         return "No relevant information was found to answer your question."
 
     filtered_results_with_scores = [
@@ -133,15 +142,7 @@ def retrieve_data(query: str, filters: Optional[Dict[str, Any]] = None) -> str:
         return "No relevant information was found to answer your question."
 
     context = "\n---\n".join([doc.page_content for doc in results])
-
-    template = """
-You are an assistant for a naturopathic medicine clinic.
-Answer the question based only on the following context:
-{context}
-
-Question: {question}
-"""
-    prompt = ChatPromptTemplate.from_template(template)
+    prompt = ChatPromptTemplate.from_template(VECTOR_EMBEDDINGS_QUERY_SYSTEM_PROMPT)
     model = ChatOpenAI(
         model=settings.OPENAI_MODEL,
         temperature=0,

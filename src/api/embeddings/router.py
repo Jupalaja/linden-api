@@ -24,7 +24,7 @@ async def create_embeddings(
         if not request.sourceData.webPageURL:
             raise HTTPException(status_code=400, detail="webPageURL is required for WEB_PAGE source type")
         try:
-            store_data_from_website(request.sourceData.webPageURL)
+            store_data_from_website(request.sourceData.webPageURL, request.practiceId)
             return CreateEmbeddingsResponse(status="success", message="Embeddings created successfully from web page.")
         except Exception as e:
             logger.error(f"Failed to create embeddings from web page: {e}", exc_info=True)
@@ -41,7 +41,7 @@ async def query_embeddings(
     filters = {"source_type": SourceType.WEB_PAGE.value}
 
     try:
-        response_message = retrieve_data(query=request.query, filters=filters)
+        response_message = retrieve_data(query=request.query, practice_id=request.practiceId, filters=filters)
         return QueryEmbeddingsResponse(status="success", message=response_message)
     except Exception as e:
         logger.error(f"Failed to query embeddings: {e}", exc_info=True)
