@@ -1,13 +1,11 @@
 import logging
 from fastapi import APIRouter, HTTPException
 
-from src.services.embeddings import store_data_from_website, retrieve_data
+from src.services.embeddings import store_data_from_website
 from src.shared.enums import SourceType
 from src.shared.schemas import (
     CreateEmbeddingsRequest,
     CreateEmbeddingsResponse,
-    QueryEmbeddingsRequest,
-    QueryEmbeddingsResponse,
 )
 
 router = APIRouter()
@@ -31,18 +29,3 @@ async def create_embeddings(
             raise HTTPException(status_code=500, detail=str(e))
     else:
         raise HTTPException(status_code=400, detail=f"Source type '{request.sourceType.value}' not supported.")
-
-
-@router.post("/query-embeddings", response_model=QueryEmbeddingsResponse)
-async def query_embeddings(
-    request: QueryEmbeddingsRequest,
-):
-    logger.info(f"Received query-embeddings request: {request.model_dump_json(indent=2)}")
-    filters = {"source_type": SourceType.WEB_PAGE.value}
-
-    try:
-        response_message = retrieve_data(query=request.query, practice_id=request.practiceId, filters=filters)
-        return QueryEmbeddingsResponse(status="success", message=response_message)
-    except Exception as e:
-        logger.error(f"Failed to query embeddings: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))

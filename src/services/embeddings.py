@@ -95,7 +95,7 @@ def store_data_from_website(website: str, practice_id: str):
         )
 
 
-def retrieve_data(query: str, practice_id: str, filters: Optional[Dict[str, Any]] = None) -> str:
+def retrieve_data(query: str, practice_id: str, filters: Optional[Dict[str, Any]] = None) -> tuple[str, bool]:
     """
     Retrieves data from the vector store based on a query and optional filters,
     and generates a response using an LLM.
@@ -106,7 +106,9 @@ def retrieve_data(query: str, practice_id: str, filters: Optional[Dict[str, Any]
         filters: A dictionary of metadata to filter the search results.
 
     Returns:
-        The content of the model's response.
+        A tuple containing:
+        - The content of the model's response (str).
+        - A boolean indicating if relevant data was found (bool).
     """
     vector_store = get_vector_store()
 
@@ -120,7 +122,7 @@ def retrieve_data(query: str, practice_id: str, filters: Optional[Dict[str, Any]
 
     if not results_with_scores:
         logger.warning(f"No results found for query: '{query}' with filters: {search_filters}")
-        return "No relevant information was found to answer your question."
+        return "No relevant information was found to answer your question.", False
 
     filtered_results_with_scores = [
         (doc, score) for doc, score in results_with_scores if score < VECTOR_EMBEDDINGS_SIMILARITY_THRESHOLD
@@ -139,7 +141,7 @@ def retrieve_data(query: str, practice_id: str, filters: Optional[Dict[str, Any]
         logger.warning(
             f"No results found within similarity threshold ({VECTOR_EMBEDDINGS_SIMILARITY_THRESHOLD}) for query: '{query}'"
         )
-        return "No relevant information was found to answer your question."
+        return "No relevant information was found to answer your question.", False
 
     context = "\n---\n".join([doc.page_content for doc in results])
     prompt = ChatPromptTemplate.from_template(VECTOR_EMBEDDINGS_QUERY_SYSTEM_PROMPT)
@@ -152,4 +154,4 @@ def retrieve_data(query: str, practice_id: str, filters: Optional[Dict[str, Any]
 
     response = chain.invoke({"context": context, "question": query})
 
-    return response.content
+    return response.content, True
