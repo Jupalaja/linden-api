@@ -61,6 +61,7 @@ class Settings(BaseSettings):
     CHROMA_CLOUD_API_KEY: Optional[str] = None
     CHROMA_CLOUD_TENANT: Optional[str] = None
     CHROMA_CLOUD_DATABASE: Optional[str] = None
+    CHROMA_CLOUD_COLLECTION: Optional[str] = None
 
 
     model_config = SettingsConfigDict(

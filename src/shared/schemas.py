@@ -45,3 +45,13 @@ class CreateEmbeddingsRequest(BaseModel):
 class CreateEmbeddingsResponse(BaseModel):
     status: str
     message: str
+
+
+class QueryEmbeddingsRequest(BaseModel):
+    practiceId: str
+    query: str
+
+
+class QueryEmbeddingsResponse(BaseModel):
+    status: str
+    message: str
