@@ -6,6 +6,7 @@ from .state import ChatflowState
 from .knowledge_data import *
 from .prompts import *
 from .tools import *
+from src.services.embeddings import retrieve_data
 from src.services.google_sheets import GoogleSheetsService
 from src.shared.enums import InteractionType
 from src.shared.schemas import InteractionMessage
@@ -129,6 +130,14 @@ async def intent_classification_workflow(
     model: BaseChatModel,
     sheets_service: Optional[GoogleSheetsService],
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
+    practice_id = interaction_data.get("practice_id")
+    if practice_id and history_messages:
+        query = history_messages[-1].message
+        response, found = retrieve_data(query=query, practice_id=practice_id)
+        if found:
+            interaction_data["embeddings_response"] = response
+            return [], ChatflowState.REPLY_FROM_EMBEDDINGS, None, interaction_data
+
     langchain_messages = get_langchain_history(history_messages)
     tool_results = await call_single_tool(
         langchain_messages, model, classify_intent, CHATFLOW_SYSTEM_PROMPT
@@ -215,6 +224,21 @@ async def out_of_scope_workflow(
         model,
         PROMPT_OUT_OF_SCOPE_QUESTION,
         ChatflowState.OFFER_BOOK_CALL,
+        interaction_data,
+    )
+
+
+async def reply_from_embeddings_workflow(
+    history_messages: list[InteractionMessage],
+    interaction_data: dict,
+    model: BaseChatModel,
+    sheets_service: Optional[GoogleSheetsService],
+) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
+    response = interaction_data.pop("embeddings_response", "I am not sure how to answer that, can you rephrase?")
+    return (
+        [InteractionMessage(role=InteractionType.MODEL, message=response)],
+        ChatflowState.REQUEST_RESOLVED_AWAIT_NEW_MESSAGE,
+        None,
         interaction_data,
     )
 

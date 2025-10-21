@@ -67,6 +67,9 @@ async def handle(
     # Append new user message to history
     history_messages.append(user_message)
 
+    if interaction.practice_id:
+        interaction_data["practice_id"] = interaction.practice_id
+
     if interaction_request.user_data:
         # Create a copy to ensure SQLAlchemy detects changes to the JSON field.
         interaction_data = interaction_data.copy()

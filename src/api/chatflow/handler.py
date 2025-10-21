@@ -40,6 +40,7 @@ async def handle_chatflow(
         ChatflowState.INTENT_FRUSTRATED_CUSTOMER: frustrated_customer_workflow,
         ChatflowState.INTENT_OUT_OF_SCOPE_QUESTION: out_of_scope_workflow,
         ChatflowState.RECOMMENDED_DOCTOR: recommended_doctor_workflow,
+        ChatflowState.REPLY_FROM_EMBEDDINGS: reply_from_embeddings_workflow,
         ChatflowState.CUSTOMER_ACKNOWLEDGES_RESPONSE: customer_acknowledges_workflow,
         ChatflowState.INTENT_FAQ: faq_workflow,
         ChatflowState.CONDITION_NOT_TREATED_SEND_CONTACT_INFO: condition_not_treated_workflow,
