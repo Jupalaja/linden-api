@@ -3,19 +3,16 @@ import regex
 from typing import Any, Dict, Optional
 
 from firecrawl import Firecrawl
-from langchain_core.documents import Document
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_openai import ChatOpenAI
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 from src.config import settings
 from src.services.vector_store import get_vector_store
+from src.shared.constants import INVALID_UNICODE_CLEANUP_REGEX, VECTOR_EMBEDDINGS_SIMILARITY_THRESHOLD
 from src.shared.enums import SourceType
 
 logger = logging.getLogger(__name__)
-
-
-EXCLUDED_CHARS_REGEX_PATTERN = r'[\p{Cf}\p{Cn}\p{Co}\p{Cs}\p{So}]'
 
 
 def store_data_from_website(website: str):
@@ -42,7 +39,7 @@ def store_data_from_website(website: str):
         print(f"Warning: No markdown content scraped from {website}. Skipping.")
         return
         
-    cleaned_markdown = regex.sub(EXCLUDED_CHARS_REGEX_PATTERN, '', output_markdown)
+    cleaned_markdown = regex.sub(INVALID_UNICODE_CLEANUP_REGEX, '', output_markdown)
 
     text_splitter = RecursiveCharacterTextSplitter.from_tiktoken_encoder(
         chunk_size=512,
@@ -114,14 +111,27 @@ def retrieve_data(query: str, filters: Optional[Dict[str, Any]] = None) -> str:
 
     if not results_with_scores:
         logger.warning(f"No results found for query: '{query}' with filters: {filters}")
-        return "I couldn't find any relevant information to answer your question."
+        return "No relevant information was found to answer your question."
 
-    logger.info(f"Found {len(results_with_scores)} results for query: '{query}'")
-    for doc, score in results_with_scores:
+    filtered_results_with_scores = [
+        (doc, score) for doc, score in results_with_scores if score < VECTOR_EMBEDDINGS_SIMILARITY_THRESHOLD
+    ]
+
+    logger.info(f"Found {len(filtered_results_with_scores)} results for query: '{query}'")
+    for doc, score in filtered_results_with_scores:
         doc_id = doc.metadata.get('doc_id', 'N/A')
         logger.info(f"  - Document ID: {doc_id}, Score (distance): {score:.4f}")
 
-    results = [doc for doc, score in results_with_scores]
+    results = [
+        doc for doc, _ in filtered_results_with_scores
+    ]
+
+    if not results:
+        logger.warning(
+            f"No results found within similarity threshold ({VECTOR_EMBEDDINGS_SIMILARITY_THRESHOLD}) for query: '{query}'"
+        )
+        return "No relevant information was found to answer your question."
+
     context = "\n---\n".join([doc.page_content for doc in results])
 
     template = """
