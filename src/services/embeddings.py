@@ -1,4 +1,6 @@
 import logging
+from urllib.parse import urlparse
+
 import regex
 from typing import Any, Dict, Optional
 
@@ -31,7 +33,7 @@ def store_data_from_website(website: str, practice_id: str):
         api_key=settings.FIRECRAWL_API_KEY,
     )
 
-    print(f"Scraping {website}...")
+    logger.info(f"Scraping {website} for practice_id: {practice_id}...")
     scraped_website = firecrawl.scrape(
         url=website,
         formats=["markdown"],
@@ -40,7 +42,7 @@ def store_data_from_website(website: str, practice_id: str):
     )
     output_markdown = scraped_website.markdown
     if not output_markdown:
-        print(f"Warning: No markdown content scraped from {website}. Skipping.")
+        logger.warning(f"No markdown content scraped from {website}. Skipping.")
         return
         
     cleaned_markdown = regex.sub(INVALID_UNICODE_CLEANUP_REGEX, '', output_markdown)
@@ -50,8 +52,12 @@ def store_data_from_website(website: str, practice_id: str):
         chunk_overlap=128,
     )
     docs = text_splitter.create_documents([cleaned_markdown])
+    logger.info(f"Split content from {website} into {len(docs)} documents.")
 
-    sanitized_url = regex.sub(r'[^a-zA-Z0-9]', '_', website)
+    parsed_url = urlparse(website)
+    endpoint = parsed_url.netloc + parsed_url.path
+    sanitized_url = regex.sub(r'[^a-zA-Z0-9]', '_', endpoint).strip('_')
+
     ids = []
     for i, doc in enumerate(docs):
         doc_id = f"{sanitized_url}_{i}"
@@ -62,37 +68,45 @@ def store_data_from_website(website: str, practice_id: str):
         doc.metadata["source_url"] = website
         ids.append(doc_id)
 
-    # Check for existing documents to avoid duplication
-    existing_docs_result = vector_store.get(ids=ids, include=[])
-    existing_ids = set(existing_docs_result["ids"])
+    try:
+        # Check for existing documents to avoid duplication
+        logger.info(f"Checking for {len(ids)} existing documents in vector store...")
+        existing_docs_result = vector_store.get(ids=ids, include=[])
+        existing_ids = set(existing_docs_result["ids"])
+        logger.info(f"Found {len(existing_ids)} existing documents.")
 
-    docs_to_add = []
-    ids_to_add = []
-    docs_to_update = []
-    ids_to_update = []
-    for i, doc_id in enumerate(ids):
-        if doc_id not in existing_ids:
-            docs_to_add.append(docs[i])
-            ids_to_add.append(doc_id)
-        else:
-            docs_to_update.append(docs[i])
-            ids_to_update.append(doc_id)
+        docs_to_add = []
+        ids_to_add = []
+        docs_to_update = []
+        ids_to_update = []
+        for i, doc_id in enumerate(ids):
+            if doc_id not in existing_ids:
+                docs_to_add.append(docs[i])
+                ids_to_add.append(doc_id)
+            else:
+                docs_to_update.append(docs[i])
+                ids_to_update.append(doc_id)
 
-    if docs_to_add:
-        vector_store.add_documents(documents=docs_to_add, ids=ids_to_add)
-        print(
-            f"Successfully added {len(docs_to_add)} new chunks from {website} to the collection."
-        )
-    if docs_to_update:
-        vector_store.update_documents(documents=docs_to_update, ids=ids_to_update)
-        print(
-            f"Successfully updated {len(docs_to_update)} new chunks from {website} to the collection."
-        )
+        if docs_to_add:
+            logger.info(f"Adding {len(docs_to_add)} new documents to vector store.")
+            vector_store.add_documents(documents=docs_to_add, ids=ids_to_add)
+            logger.info(
+                f"Successfully added {len(docs_to_add)} new chunks from {website} to the collection."
+            )
+        if docs_to_update:
+            logger.info(f"Updating {len(docs_to_update)} documents in vector store.")
+            vector_store.update_documents(documents=docs_to_update, ids=ids_to_update)
+            logger.info(
+                f"Successfully updated {len(docs_to_update)} chunks from {website} to the collection."
+            )
 
-    if not docs_to_add and not docs_to_update:
-        print(
-            f"All documents from {website} are already in the collection. No new documents to add."
-        )
+        if not docs_to_add and not docs_to_update:
+            logger.info(
+                f"All documents from {website} are already in the collection. No new documents to add."
+            )
+    except Exception as e:
+        logger.error(f"Error interacting with vector store for website {website} and practice_id {practice_id}: {e}", exc_info=True)
+        raise
 
 
 def retrieve_data(query: str, practice_id: str, filters: Optional[Dict[str, Any]] = None) -> tuple[str, bool]:
