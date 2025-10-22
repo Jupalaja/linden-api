@@ -5,6 +5,7 @@ import regex
 from typing import Any, Dict, Optional
 
 from firecrawl import Firecrawl
+from firecrawl.v2.utils.error_handler import BadRequestError
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_openai import ChatOpenAI
 from langchain_text_splitters import RecursiveCharacterTextSplitter
@@ -19,6 +20,11 @@ from src.shared.constants import (
 from src.shared.enums import SourceType
 
 logger = logging.getLogger(__name__)
+
+
+class InvalidURLError(ValueError):
+    """Custom exception for invalid URLs provided for scraping."""
+    pass
 
 
 def store_data_from_website(website: str, practice_id: str):
@@ -62,12 +68,16 @@ def store_data_from_website(website: str, practice_id: str):
         raise
 
     logger.info(f"Scraping {website} for practice_id: {practice_id}...")
-    scraped_website = firecrawl.scrape(
-        url=website,
-        formats=["markdown"],
-        exclude_tags=
-            ["script", "style", "img", "a", "source", "track", "embed", "base", "col", "area", "form", "input"],
-    )
+    try:
+        scraped_website = firecrawl.scrape(
+            url=website,
+            formats=["markdown"],
+            exclude_tags=
+                ["script", "style", "img", "a", "source", "track", "embed", "base", "col", "area", "form", "input"],
+        )
+    except BadRequestError as e:
+        logger.warning(f"Firecrawl failed to scrape URL {website} due to a bad request: {e}")
+        raise InvalidURLError(f"The URL '{website}' is invalid or could not be scraped.") from e
     output_markdown = scraped_website.markdown
     if not output_markdown:
         logger.warning(f"No markdown content scraped from {website}. Skipping.")

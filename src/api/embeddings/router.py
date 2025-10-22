@@ -1,7 +1,7 @@
 import logging
 from fastapi import APIRouter, HTTPException, status
 
-from src.services.embeddings import delete_data_from_website, store_data_from_website
+from src.services.embeddings import delete_data_from_website, store_data_from_website, InvalidURLError
 from src.shared.enums import SourceType
 from src.shared.schemas import (
     CreateEmbeddingsRequest,
@@ -26,6 +26,9 @@ async def create_embeddings(
         try:
             store_data_from_website(request.sourceData.webPageURL, request.practiceId)
             return CreateEmbeddingsResponse(status="success", message="Embeddings created successfully from web page.")
+        except InvalidURLError as e:
+            logger.error(f"Failed to create embeddings from invalid web page {request.sourceData.webPageURL} for practice {request.practiceId}: {e}", exc_info=True)
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="The provided URL is invalid. Please check the URL and try again.")
         except Exception as e:
             logger.error(f"Failed to create embeddings from web page {request.sourceData.webPageURL} for practice {request.practiceId}: {e}", exc_info=True)
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="An error occurred while creating embeddings from the web page.")
