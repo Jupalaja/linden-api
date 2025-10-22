@@ -14,11 +14,11 @@ router = APIRouter()
 logger = logging.getLogger(__name__)
 
 
-@router.post("/create-embeddings", response_model=CreateEmbeddingsResponse)
+@router.post("/embeddings", response_model=CreateEmbeddingsResponse)
 async def create_embeddings(
     request: CreateEmbeddingsRequest,
 ):
-    logger.info(f"Received create-embeddings request: {request.model_dump_json(indent=2)}")
+    logger.info(f"Received create embeddings request: {request.model_dump_json(indent=2)}")
 
     if request.sourceType == SourceType.WEB_PAGE:
         if not request.sourceData.webPageURL:
@@ -36,11 +36,11 @@ async def create_embeddings(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Source type '{request.sourceType.value}' not supported.")
 
 
-@router.delete("/delete-embeddings", response_model=DeleteEmbeddingsResponse)
+@router.delete("/embeddings", response_model=DeleteEmbeddingsResponse)
 async def delete_embeddings(
     request: DeleteEmbeddingsRequest,
 ):
-    logger.info(f"Received delete-embeddings request: {request.model_dump_json(indent=2)}")
+    logger.info(f"Received delete embeddings request: {request.model_dump_json(indent=2)}")
 
     if request.sourceType == SourceType.WEB_PAGE:
         if not request.sourceData.webPageURL:
