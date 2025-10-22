@@ -29,14 +29,12 @@ flatbuffers==25.9.23
 frozenlist==1.8.0
 fsspec==2025.9.0
 google==3.0.0
-google-ai-generativelanguage==0.6.15
 google-api-core==2.25.1
 google-api-python-client==2.172.0
 google-auth==2.40.3
 google-auth-httplib2==0.2.0
 google-auth-oauthlib==1.2.2
 google-genai==1.20.0
-google-generativeai==0.8.5
 googleapis-common-protos==1.70.0
 greenlet==3.2.3
 grpcio==1.73.0
@@ -63,10 +61,8 @@ jsonschema==4.25.1
 jsonschema-specifications==2025.9.1
 kubernetes==34.1.0
 langchain==1.0.1
-langchain-anthropic==0.3.19
 langchain-chroma==1.0.0
 langchain-core==1.0.0
-langchain-google-genai==2.1.10
 langchain-openai==1.0.0
 langchain-text-splitters==0.3.11
 langgraph==1.0.1
