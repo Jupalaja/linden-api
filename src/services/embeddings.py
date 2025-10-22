@@ -33,6 +33,34 @@ def store_data_from_website(website: str, practice_id: str):
         api_key=settings.FIRECRAWL_API_KEY,
     )
 
+    parsed_url = urlparse(website)
+    endpoint = parsed_url.netloc + parsed_url.path
+    sanitized_url = regex.sub(r'[^a-zA-Z0-9]', '_', endpoint).strip('_')
+
+    try:
+        logger.info(f"Checking for existing documents with URL prefix '{sanitized_url}' for practice_id: {practice_id}...")
+        existing_docs = vector_store.get(
+            where={
+                "$and": [
+                    {"practice_id": practice_id},
+                    {"source_type": SourceType.WEB_PAGE.value},
+                    {"source_url": website}
+                ]
+            },
+            include=[]
+        )
+        existing_ids = existing_docs.get("ids", [])
+        
+        if existing_ids:
+            logger.info(f"Found {len(existing_ids)} existing documents for URL {website}. Deleting them before adding new chunks...")
+            vector_store.delete(ids=existing_ids)
+            logger.info(f"Successfully deleted {len(existing_ids)} existing chunks for {website}.")
+        else:
+            logger.info(f"No existing documents found for URL {website}.")
+    except Exception as e:
+        logger.error(f"Error while checking/deleting existing documents for {website}: {e}", exc_info=True)
+        raise
+
     logger.info(f"Scraping {website} for practice_id: {practice_id}...")
     scraped_website = firecrawl.scrape(
         url=website,
@@ -54,10 +82,6 @@ def store_data_from_website(website: str, practice_id: str):
     docs = text_splitter.create_documents([cleaned_markdown])
     logger.info(f"Split content from {website} into {len(docs)} documents.")
 
-    parsed_url = urlparse(website)
-    endpoint = parsed_url.netloc + parsed_url.path
-    sanitized_url = regex.sub(r'[^a-zA-Z0-9]', '_', endpoint).strip('_')
-
     ids = []
     for i, doc in enumerate(docs):
         doc_id = f"{sanitized_url}_{i}"
@@ -69,43 +93,13 @@ def store_data_from_website(website: str, practice_id: str):
         ids.append(doc_id)
 
     try:
-        # Check for existing documents to avoid duplication
-        logger.info(f"Checking for {len(ids)} existing documents in vector store...")
-        existing_docs_result = vector_store.get(ids=ids, include=[])
-        existing_ids = set(existing_docs_result["ids"])
-        logger.info(f"Found {len(existing_ids)} existing documents.")
-
-        docs_to_add = []
-        ids_to_add = []
-        docs_to_update = []
-        ids_to_update = []
-        for i, doc_id in enumerate(ids):
-            if doc_id not in existing_ids:
-                docs_to_add.append(docs[i])
-                ids_to_add.append(doc_id)
-            else:
-                docs_to_update.append(docs[i])
-                ids_to_update.append(doc_id)
-
-        if docs_to_add:
-            logger.info(f"Adding {len(docs_to_add)} new documents to vector store.")
-            vector_store.add_documents(documents=docs_to_add, ids=ids_to_add)
-            logger.info(
-                f"Successfully added {len(docs_to_add)} new chunks from {website} to the collection."
-            )
-        if docs_to_update:
-            logger.info(f"Updating {len(docs_to_update)} documents in vector store.")
-            vector_store.update_documents(documents=docs_to_update, ids=ids_to_update)
-            logger.info(
-                f"Successfully updated {len(docs_to_update)} chunks from {website} to the collection."
-            )
-
-        if not docs_to_add and not docs_to_update:
-            logger.info(
-                f"All documents from {website} are already in the collection. No new documents to add."
-            )
+        logger.info(f"Adding {len(docs)} new documents to vector store.")
+        vector_store.add_documents(documents=docs, ids=ids)
+        logger.info(
+            f"Successfully added {len(docs)} new chunks from {website} to the collection."
+        )
     except Exception as e:
-        logger.error(f"Error interacting with vector store for website {website} and practice_id {practice_id}: {e}", exc_info=True)
+        logger.error(f"Error adding documents to vector store for website {website} and practice_id {practice_id}: {e}", exc_info=True)
         raise
 
 
@@ -129,7 +123,6 @@ def retrieve_data(query: str, practice_id: str, filters: Optional[Dict[str, Any]
     search_filters = filters.copy() if filters else {}
     search_filters["practice_id"] = practice_id
 
-    # Perform a similarity search with optional filters
     results_with_scores = vector_store.similarity_search_with_score(
         query=query, k=3, filter=search_filters
     )
