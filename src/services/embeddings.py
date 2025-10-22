@@ -103,6 +103,40 @@ def store_data_from_website(website: str, practice_id: str):
         raise
 
 
+def delete_data_from_website(website: str, practice_id: str) -> int:
+    """
+    Deletes all documents from Chroma that are associated with a specific website URL and practice ID.
+    Returns the number of documents deleted.
+    """
+    vector_store = get_vector_store()
+
+    try:
+        logger.info(f"Searching for documents to delete for URL: {website} and practice_id: {practice_id}...")
+        existing_docs = vector_store.get(
+            where={
+                "$and": [
+                    {"practice_id": practice_id},
+                    {"source_type": SourceType.WEB_PAGE.value},
+                    {"source_url": website}
+                ]
+            },
+            include=[]
+        )
+        existing_ids = existing_docs.get("ids", [])
+
+        if existing_ids:
+            logger.info(f"Found {len(existing_ids)} documents for URL {website}. Deleting them...")
+            vector_store.delete(ids=existing_ids)
+            logger.info(f"Successfully deleted {len(existing_ids)} chunks for {website}.")
+            return len(existing_ids)
+        else:
+            logger.info(f"No existing documents found for URL {website}.")
+            return 0
+    except Exception as e:
+        logger.error(f"Error while deleting documents for {website}: {e}", exc_info=True)
+        raise
+
+
 def retrieve_data(query: str, practice_id: str, filters: Optional[Dict[str, Any]] = None) -> tuple[str, bool]:
     """
     Retrieves data from the vector store based on a query and optional filters,

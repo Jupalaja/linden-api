@@ -45,3 +45,15 @@ class CreateEmbeddingsRequest(BaseModel):
 class CreateEmbeddingsResponse(BaseModel):
     status: str
     message: str
+
+
+class DeleteEmbeddingsRequest(BaseModel):
+    practiceId: str
+    sourceType: SourceType
+    sourceData: SourceData
+
+
+class DeleteEmbeddingsResponse(BaseModel):
+    status: str
+    message: str
+    deleted_count: int
