@@ -1,7 +1,13 @@
 import logging
 from fastapi import APIRouter, HTTPException, status
 
-from src.services.embeddings import delete_data_from_website, store_data_from_website, InvalidURLError
+from src.services.embeddings import (
+    delete_data_from_qa_pair,
+    delete_data_from_website,
+    store_data_from_qa_pair,
+    store_data_from_website,
+    InvalidURLError,
+)
 from src.shared.enums import SourceType
 from src.shared.schemas import (
     CreateEmbeddingsRequest,
@@ -32,6 +38,15 @@ async def create_embeddings(
         except Exception as e:
             logger.error(f"Failed to create embeddings from web page {request.sourceData.webPageURL} for practice {request.practiceId}: {e}", exc_info=True)
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="An error occurred while creating embeddings from the web page.")
+    elif request.sourceType == SourceType.QA_PAIR:
+        if not request.sourceData.qa_pair:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="qa_pair is required for QA_PAIR source type")
+        try:
+            store_data_from_qa_pair(request.sourceData.qa_pair, request.practiceId)
+            return CreateEmbeddingsResponse(status="success", message="Embeddings created successfully from Q&A pair.")
+        except Exception as e:
+            logger.error(f"Failed to create embeddings from Q&A pair for practice {request.practiceId}: {e}", exc_info=True)
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="An error occurred while creating embeddings from the Q&A pair.")
     else:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Source type '{request.sourceType.value}' not supported.")
 
@@ -55,5 +70,18 @@ async def delete_embeddings(
         except Exception as e:
             logger.error(f"Failed to delete embeddings from web page {request.sourceData.webPageURL} for practice {request.practiceId}: {e}", exc_info=True)
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="An error occurred while deleting embeddings from the web page.")
+    elif request.sourceType == SourceType.QA_PAIR:
+        if not request.sourceData.qa_pair or not request.sourceData.qa_pair.question:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="qa_pair with question is required for QA_PAIR source type")
+        try:
+            deleted_count = delete_data_from_qa_pair(request.sourceData.qa_pair.question, request.practiceId)
+            return DeleteEmbeddingsResponse(
+                status="success",
+                message=f"Deletion successful for Q&A pair. {deleted_count} documents removed.",
+                deleted_count=deleted_count,
+            )
+        except Exception as e:
+            logger.error(f"Failed to delete embeddings from Q&A pair for practice {request.practiceId}: {e}", exc_info=True)
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="An error occurred while deleting embeddings from the Q&A pair.")
     else:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Source type '{request.sourceType.value}' not supported.")

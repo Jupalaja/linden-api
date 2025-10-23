@@ -6,6 +6,7 @@ from typing import Any, Dict, Optional
 
 from firecrawl import Firecrawl
 from firecrawl.v2.utils.error_handler import BadRequestError
+from langchain_core.documents import Document
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_openai import ChatOpenAI
 from langchain_text_splitters import RecursiveCharacterTextSplitter
@@ -18,6 +19,7 @@ from src.shared.constants import (
     VECTOR_EMBEDDINGS_QUERY_SYSTEM_PROMPT
 )
 from src.shared.enums import SourceType
+from src.shared.schemas import QAPair
 
 logger = logging.getLogger(__name__)
 
@@ -25,6 +27,60 @@ logger = logging.getLogger(__name__)
 class InvalidURLError(ValueError):
     """Custom exception for invalid URLs provided for scraping."""
     pass
+
+
+def _sanitize_for_doc_id(text: str) -> str:
+    """Sanitizes a string to be used as a document ID."""
+    return regex.sub(r'[^a-zA-Z0-9]+', '_', text.lower()).strip('_')
+
+
+def store_data_from_qa_pair(qa_pair: QAPair, practice_id: str):
+    """
+    Stores a Q&A pair in Chroma.
+    """
+    vector_store = get_vector_store()
+
+    doc_id = _sanitize_for_doc_id(qa_pair.question)
+
+    try:
+        logger.info(f"Checking for existing document with doc_id '{doc_id}' for practice_id: {practice_id}...")
+        existing_docs = vector_store.get(
+            where={
+                "$and": [
+                    {"practice_id": practice_id},
+                    {"source_type": SourceType.QA_PAIR.value},
+                    {"doc_id": doc_id}
+                ]
+            },
+            include=[]
+        )
+        existing_ids = existing_docs.get("ids", [])
+
+        if existing_ids:
+            logger.info(f"Found {len(existing_ids)} existing documents for Q&A pair. Deleting them before adding new document...")
+            vector_store.delete(ids=existing_ids)
+            logger.info(f"Successfully deleted {len(existing_ids)} existing documents for Q&A pair.")
+        else:
+            logger.info(f"No existing document found for Q&A pair with doc_id '{doc_id}'.")
+    except Exception as e:
+        logger.error(f"Error while checking/deleting existing documents for Q&A pair: {e}", exc_info=True)
+        raise
+
+    content = f"Q: {qa_pair.question}\nA: {qa_pair.answer}"
+    doc = Document(page_content=content)
+    doc.metadata["doc_id"] = doc_id
+    doc.metadata["practice_id"] = practice_id
+    doc.metadata["source_type"] = SourceType.QA_PAIR.value
+
+    try:
+        logger.info(f"Adding new Q&A pair document to vector store with ID {doc_id}.")
+        vector_store.add_documents(documents=[doc], ids=[doc_id])
+        logger.info(
+            f"Successfully added new Q&A pair from '{qa_pair.question}' to the collection."
+        )
+    except Exception as e:
+        logger.error(f"Error adding Q&A pair document to vector store for practice_id {practice_id}: {e}", exc_info=True)
+        raise
 
 
 def store_data_from_website(website: str, practice_id: str):
@@ -41,7 +97,7 @@ def store_data_from_website(website: str, practice_id: str):
 
     parsed_url = urlparse(website)
     endpoint = parsed_url.netloc + parsed_url.path
-    sanitized_url = regex.sub(r'[^a-zA-Z0-9]', '_', endpoint).strip('_')
+    sanitized_url = _sanitize_for_doc_id(endpoint)
 
     try:
         logger.info(f"Checking for existing documents with URL prefix '{sanitized_url}' for practice_id: {practice_id}...")
@@ -113,6 +169,41 @@ def store_data_from_website(website: str, practice_id: str):
         raise
 
 
+def delete_data_from_qa_pair(question: str, practice_id: str) -> int:
+    """
+    Deletes a Q&A pair from Chroma based on the question and practice ID.
+    Returns the number of documents deleted.
+    """
+    vector_store = get_vector_store()
+    doc_id = _sanitize_for_doc_id(question)
+
+    try:
+        logger.info(f"Searching for Q&A pair to delete with doc_id: {doc_id} and practice_id: {practice_id}...")
+        existing_docs = vector_store.get(
+            where={
+                "$and": [
+                    {"practice_id": practice_id},
+                    {"source_type": SourceType.QA_PAIR.value},
+                    {"doc_id": doc_id}
+                ]
+            },
+            include=[]
+        )
+        existing_ids = existing_docs.get("ids", [])
+
+        if existing_ids:
+            logger.info(f"Found {len(existing_ids)} documents for Q&A pair. Deleting them...")
+            vector_store.delete(ids=existing_ids)
+            logger.info(f"Successfully deleted {len(existing_ids)} chunks for Q&A pair.")
+            return len(existing_ids)
+        else:
+            logger.info(f"No existing documents found for Q&A pair.")
+            return 0
+    except Exception as e:
+        logger.error(f"Error while deleting Q&A pair documents: {e}", exc_info=True)
+        raise
+
+
 def delete_data_from_website(website: str, practice_id: str) -> int:
     """
     Deletes all documents from Chroma that are associated with a specific website URL and practice ID.
@@ -178,6 +269,15 @@ def retrieve_data(query: str, practice_id: str, filters: Optional[Dict[str, Any]
     filtered_results_with_scores = [
         (doc, score) for doc, score in results_with_scores if score < VECTOR_EMBEDDINGS_SIMILARITY_THRESHOLD
     ]
+
+    if filtered_results_with_scores:
+        qa_pair_results = [
+            (doc, score) for doc, score in filtered_results_with_scores
+            if doc.metadata.get("source_type") == SourceType.QA_PAIR.value
+        ]
+        if qa_pair_results:
+            logger.info(f"Found {len(qa_pair_results)} QA_PAIR results, prioritizing them.")
+            filtered_results_with_scores = qa_pair_results
 
     logger.info(f"Found {len(filtered_results_with_scores)} results for query: '{query}'")
     for doc, score in filtered_results_with_scores:

@@ -32,8 +32,14 @@ class InteractionResponse(BaseModel):
     states: List[str]
 
 
+class QAPair(BaseModel):
+    question: str
+    answer: str
+
+
 class SourceData(BaseModel):
     webPageURL: Optional[str] = None
+    qa_pair: Optional[QAPair] = None
 
 
 class CreateEmbeddingsRequest(BaseModel):
