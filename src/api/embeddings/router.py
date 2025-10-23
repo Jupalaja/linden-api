@@ -2,8 +2,10 @@ import logging
 from fastapi import APIRouter, HTTPException, status
 
 from src.services.embeddings import (
+    delete_data_from_document,
     delete_data_from_qa_pair,
     delete_data_from_website,
+    store_data_from_document,
     store_data_from_qa_pair,
     store_data_from_website,
     InvalidURLError,
@@ -47,6 +49,15 @@ async def create_embeddings(
         except Exception as e:
             logger.error(f"Failed to create embeddings from Q&A pair for practice {request.practiceId}: {e}", exc_info=True)
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="An error occurred while creating embeddings from the Q&A pair.")
+    elif request.sourceType == SourceType.DOCUMENT:
+        if not request.sourceData.document or not request.sourceData.document.data or not request.sourceData.document.docType or not request.sourceData.document.name:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="document with data, docType and name is required for DOCUMENT source type")
+        try:
+            store_data_from_document(request.sourceData.document, request.practiceId)
+            return CreateEmbeddingsResponse(status="success", message="Embeddings created successfully from document.")
+        except Exception as e:
+            logger.error(f"Failed to create embeddings from document for practice {request.practiceId}: {e}", exc_info=True)
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="An error occurred while creating embeddings from the document.")
     else:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Source type '{request.sourceType.value}' not supported.")
 
@@ -83,5 +94,18 @@ async def delete_embeddings(
         except Exception as e:
             logger.error(f"Failed to delete embeddings from Q&A pair for practice {request.practiceId}: {e}", exc_info=True)
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="An error occurred while deleting embeddings from the Q&A pair.")
+    elif request.sourceType == SourceType.DOCUMENT:
+        if not request.sourceData.document or not request.sourceData.document.name:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="document with name is required for DOCUMENT source type")
+        try:
+            deleted_count = delete_data_from_document(request.sourceData.document.name, request.practiceId)
+            return DeleteEmbeddingsResponse(
+                status="success",
+                message=f"Deletion successful for document. {deleted_count} documents removed.",
+                deleted_count=deleted_count,
+            )
+        except Exception as e:
+            logger.error(f"Failed to delete embeddings from document for practice {request.practiceId}: {e}", exc_info=True)
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="An error occurred while deleting embeddings from the document.")
     else:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Source type '{request.sourceType.value}' not supported.")

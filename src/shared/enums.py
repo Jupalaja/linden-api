@@ -7,6 +7,10 @@ class InteractionType(str, Enum):
     TOOL = "tool"
 
 class SourceType(Enum):
-    FILE = "FILE"
     WEB_PAGE = "WEB_PAGE"
     QA_PAIR = "QA_PAIR"
+    DOCUMENT = "DOCUMENT"
+
+class DocType(str, Enum):
+    DOCX = "DOCX"
+    TXT = "TXT"

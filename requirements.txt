@@ -146,3 +146,10 @@ xxhash==3.6.0
 yarl==1.22.0
 zipp==3.23.0
 zstandard==0.24.0
+pypandoc-binary~=1.15
+typing_extensions~=4.14.0
+pip~=24.2
+pyasn1_modules~=0.4.2
+importlib_resources~=6.5.2
+importlib_metadata~=8.7.0
+pydantic_core~=2.33.2

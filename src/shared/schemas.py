@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 from pydantic import BaseModel, Field
 from typing import List, Optional, Dict, Any
 
-from src.shared.enums import InteractionType, SourceType
+from src.shared.enums import InteractionType, SourceType, DocType
 
 
 class HealthResponse(BaseModel):
@@ -37,9 +37,16 @@ class QAPair(BaseModel):
     answer: str
 
 
+class DocumentData(BaseModel):
+    name: str
+    docType: Optional[DocType] = None
+    data: Optional[str] = None
+
+
 class SourceData(BaseModel):
     webPageURL: Optional[str] = None
     qa_pair: Optional[QAPair] = None
+    document: Optional[DocumentData] = None
 
 
 class CreateEmbeddingsRequest(BaseModel):

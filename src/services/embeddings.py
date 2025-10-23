@@ -1,6 +1,8 @@
+import base64
 import logging
 from urllib.parse import urlparse
 
+import pypandoc
 import regex
 from typing import Any, Dict, Optional
 
@@ -18,8 +20,8 @@ from src.shared.constants import (
     VECTOR_EMBEDDINGS_SIMILARITY_THRESHOLD,
     VECTOR_EMBEDDINGS_QUERY_SYSTEM_PROMPT
 )
-from src.shared.enums import SourceType
-from src.shared.schemas import QAPair
+from src.shared.enums import DocType, SourceType
+from src.shared.schemas import DocumentData, QAPair
 
 logger = logging.getLogger(__name__)
 
@@ -80,6 +82,80 @@ def store_data_from_qa_pair(qa_pair: QAPair, practice_id: str):
         )
     except Exception as e:
         logger.error(f"Error adding Q&A pair document to vector store for practice_id {practice_id}: {e}", exc_info=True)
+        raise
+
+
+def store_data_from_document(document_data: DocumentData, practice_id: str):
+    """
+    Processes a document and stores its content in Chroma.
+    """
+    vector_store = get_vector_store()
+    doc_id = _sanitize_for_doc_id(document_data.name)
+
+    try:
+        logger.info(f"Checking for existing document with doc_id '{doc_id}' for practice_id: {practice_id}...")
+        existing_docs = vector_store.get(
+            where={
+                "$and": [
+                    {"practice_id": practice_id},
+                    {"source_type": SourceType.DOCUMENT.value},
+                    {"doc_type": document_data.docType},
+                    {"doc_id": doc_id}
+                ]
+            },
+            include=[]
+        )
+        existing_ids = existing_docs.get("ids", [])
+
+        if existing_ids:
+            logger.info(f"Found {len(existing_ids)} existing documents for document. Deleting them before adding new document...")
+            vector_store.delete(ids=existing_ids)
+            logger.info(f"Successfully deleted {len(existing_ids)} existing documents for document.")
+        else:
+            logger.info(f"No existing document found for document with doc_id '{doc_id}'.")
+    except Exception as e:
+        logger.error(f"Error while checking/deleting existing documents for document: {e}", exc_info=True)
+        raise
+
+    try:
+        decoded_data = base64.b64decode(document_data.data)
+        if document_data.docType == DocType.DOCX:
+            # Note: pypandoc requires pandoc to be installed on the system.
+            content = pypandoc.convert_text(decoded_data, "markdown", format="docx")
+        elif document_data.docType == DocType.TXT:
+            content = decoded_data.decode('utf-8')
+        else:
+            logger.warning(f"Unsupported docType: {document_data.docType}. Skipping.")
+            return
+    except Exception as e:
+        logger.error(f"Error processing document {document_data.name}: {e}", exc_info=True)
+        raise
+
+    cleaned_content = regex.sub(INVALID_UNICODE_CLEANUP_REGEX, '', content)
+
+    text_splitter = RecursiveCharacterTextSplitter.from_tiktoken_encoder(
+        chunk_size=512,
+        chunk_overlap=128,
+    )
+    docs = text_splitter.create_documents([cleaned_content])
+    logger.info(f"Split content from {document_data.name} into {len(docs)} documents.")
+
+    ids = []
+    for i, doc in enumerate(docs):
+        chunk_id = f"{doc_id}_{i}"
+        doc.metadata["doc_id"] = doc_id
+        doc.metadata["practice_id"] = practice_id
+        doc.metadata["source_type"] = SourceType.DOCUMENT.value
+        ids.append(chunk_id)
+
+    try:
+        logger.info(f"Adding {len(docs)} new document chunks to vector store.")
+        vector_store.add_documents(documents=docs, ids=ids)
+        logger.info(
+            f"Successfully added {len(docs)} new chunks from {document_data.name} to the collection."
+        )
+    except Exception as e:
+        logger.error(f"Error adding document chunks to vector store for practice_id {practice_id}: {e}", exc_info=True)
         raise
 
 
@@ -166,6 +242,41 @@ def store_data_from_website(website: str, practice_id: str):
         )
     except Exception as e:
         logger.error(f"Error adding documents to vector store for website {website} and practice_id {practice_id}: {e}", exc_info=True)
+        raise
+
+
+def delete_data_from_document(document_name: str, practice_id: str) -> int:
+    """
+    Deletes all chunks of a document from Chroma based on the document name and practice ID.
+    Returns the number of documents deleted.
+    """
+    vector_store = get_vector_store()
+    doc_id = _sanitize_for_doc_id(document_name)
+
+    try:
+        logger.info(f"Searching for document to delete with doc_id: {doc_id} and practice_id: {practice_id}...")
+        existing_docs = vector_store.get(
+            where={
+                "$and": [
+                    {"practice_id": practice_id},
+                    {"source_type": SourceType.DOCUMENT.value},
+                    {"doc_id": doc_id}
+                ]
+            },
+            include=[]
+        )
+        existing_ids = existing_docs.get("ids", [])
+
+        if existing_ids:
+            logger.info(f"Found {len(existing_ids)} documents for document. Deleting them...")
+            vector_store.delete(ids=existing_ids)
+            logger.info(f"Successfully deleted {len(existing_ids)} chunks for document.")
+            return len(existing_ids)
+        else:
+            logger.info(f"No existing documents found for document.")
+            return 0
+    except Exception as e:
+        logger.error(f"Error while deleting document chunks: {e}", exc_info=True)
         raise
 
 
@@ -271,13 +382,20 @@ def retrieve_data(query: str, practice_id: str, filters: Optional[Dict[str, Any]
     ]
 
     if filtered_results_with_scores:
-        qa_pair_results = [
-            (doc, score) for doc, score in filtered_results_with_scores
-            if doc.metadata.get("source_type") == SourceType.QA_PAIR.value
-        ]
-        if qa_pair_results:
-            logger.info(f"Found {len(qa_pair_results)} QA_PAIR results, prioritizing them.")
-            filtered_results_with_scores = qa_pair_results
+        source_types_present = {doc.metadata.get("source_type") for doc, _ in filtered_results_with_scores}
+
+        priority_order = [SourceType.QA_PAIR.value, SourceType.WEB_PAGE.value, SourceType.DOCUMENT.value]
+
+        for source_type in priority_order:
+            if source_type in source_types_present:
+                prioritized_results = [
+                    (doc, score) for doc, score in filtered_results_with_scores
+                    if doc.metadata.get("source_type") == source_type
+                ]
+                if prioritized_results:
+                    logger.info(f"Found {len(prioritized_results)} results of priority type '{source_type}', prioritizing them.")
+                    filtered_results_with_scores = prioritized_results
+                    break
 
     logger.info(f"Found {len(filtered_results_with_scores)} results for query: '{query}'")
     for doc, score in filtered_results_with_scores:
