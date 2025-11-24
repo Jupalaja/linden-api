@@ -71,15 +71,37 @@ async def ask_user_data_workflow(
     condition_info = interaction_data.pop("condition_info_response", "")
     doctor_recommendation = interaction_data.pop("doctor_recommendation_response", "")
 
-    full_message_parts = []
+    # Generate a cohesive response that combines condition info, doctor recommendation, and user data request
+    context_parts = []
+    context_parts.append("The user has asked about a condition. Create a natural, cohesive response that:")
+    
     if condition_info:
-        full_message_parts.append(condition_info)
+        context_parts.append(f"- Incorporates this condition information: {condition_info}")
+    
     if doctor_recommendation:
-        full_message_parts.append(doctor_recommendation)
+        context_parts.append(f"- Incorporates this doctor recommendation: {doctor_recommendation}")
+    
+    context_parts.append(f"- Asks for their information naturally: {PROMPT_ASK_USER_DATA}")
+    context_parts.append("\nCreate a single, flowing response that feels natural and cohesive, not like separate pieces stitched together.")
 
-    full_message_parts.append(PROMPT_ASK_USER_DATA)
+    context = "\n".join(context_parts)
 
-    full_message = "\n\n".join(full_message_parts)
+    full_message = await generate_response_text(
+        history_messages,
+        model,
+        system_prompt=CHATFLOW_SYSTEM_PROMPT,
+        context=context,
+    )
+
+    if not full_message:
+        # Fallback if generation fails
+        message_parts = []
+        if condition_info:
+            message_parts.append(condition_info)
+        if doctor_recommendation:
+            message_parts.append(doctor_recommendation)
+        message_parts.append(PROMPT_ASK_USER_DATA)
+        full_message = "\n\n".join(message_parts)
 
     return await _send_message(
         history_messages,
