@@ -29,11 +29,12 @@ async def _send_message(
     add_acknowledgment: bool = True,
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
     if add_acknowledgment:
+        context = f"{INSTRUCTION_FOR_ACKNOWLEDGEMENT}\n\nUPCOMING SYSTEM MESSAGE: {message}"
         acknowledgment = await generate_response_text(
             history_messages,
             model,
             system_prompt=CHATFLOW_SYSTEM_PROMPT,
-            context=INSTRUCTION_FOR_ACKNOWLEDGEMENT,
+            context=context,
         )
         if acknowledgment and acknowledgment.strip():
             full_message = f"{acknowledgment}\n\n{message}"
@@ -516,13 +517,32 @@ async def book_call_link_accepted_workflow(
     )
     # The send_book_call_link tool returns the message to send
     response_text = tool_results.get("send_book_call_link")
-    full_message = f"{response_text}\n\n{PROMPT_OFFER_NEWSLETTER}"
+
+    # Generate a friendly response including the link and the newsletter offer
+    context = (
+        f"The user has agreed to book a call. Create a response that includes:\n"
+        f"- A brief acknowledgment.\n"
+        f"- This booking info: {response_text}\n"
+        f"- This newsletter offer: {PROMPT_OFFER_NEWSLETTER}"
+    )
+
+    full_message = await generate_response_text(
+        history_messages,
+        model,
+        system_prompt=CHATFLOW_SYSTEM_PROMPT,
+        context=context,
+    )
+
+    if not full_message:
+        full_message = f"{response_text}\n\n{PROMPT_OFFER_NEWSLETTER}"
+
     return await _send_message(
         history_messages,
         model,
         full_message,
         ChatflowState.AWAITING_NEWSLETTER_RESPONSE,
         interaction_data,
+        add_acknowledgment=False,
     )
 
 
