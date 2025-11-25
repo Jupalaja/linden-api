@@ -135,7 +135,7 @@ async def get_user_data_workflow(
         else:
             interaction_data["user_data"] = user_data
 
-    return [], ChatflowState.ASKED_STATE, None, interaction_data
+    return [], ChatflowState.VALIDATE_STATE, None, interaction_data
 
 
 async def intent_classification_workflow(
