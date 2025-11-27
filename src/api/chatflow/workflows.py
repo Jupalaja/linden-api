@@ -21,38 +21,21 @@ logger = logging.getLogger(__name__)
 
 
 async def _send_message(
-    history_messages: list[InteractionMessage],
-    model: BaseChatModel,
+    _history_messages: list[InteractionMessage],
+    _model: BaseChatModel,
     message: str,
     next_state: ChatflowState,
     interaction_data: dict,
-    add_acknowledgment: bool = True,
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
-    if add_acknowledgment:
-        context = f"{INSTRUCTION_FOR_ACKNOWLEDGEMENT}\n\nUPCOMING SYSTEM MESSAGE: {message}"
-        acknowledgment = await generate_response_text(
-            history_messages,
-            model,
-            system_prompt=CHATFLOW_SYSTEM_PROMPT,
-            context=context,
-        )
-        if acknowledgment and acknowledgment.strip():
-            full_message = f"{acknowledgment}\n\n{message}"
-        else:
-            # Fallback if acknowledgment generation fails or is empty
-            full_message = message
-    else:
-        full_message = message
-
-    response_messages = [InteractionMessage(role=InteractionType.MODEL, message=full_message)]
+    response_messages = [InteractionMessage(role=InteractionType.MODEL, message=message)]
     return response_messages, next_state, None, interaction_data
 
 
 async def idle_workflow(
-    history_messages: list[InteractionMessage],
+    _history_messages: list[InteractionMessage],
     interaction_data: dict,
-    model: BaseChatModel,
-    sheets_service: Optional[GoogleSheetsService],
+    _model: BaseChatModel,
+    _sheets_service: Optional[GoogleSheetsService],
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
     return (
         [],
@@ -66,7 +49,7 @@ async def intent_classification_workflow(
     history_messages: list[InteractionMessage],
     interaction_data: dict,
     model: BaseChatModel,
-    sheets_service: Optional[GoogleSheetsService],
+    _sheets_service: Optional[GoogleSheetsService],
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
     practice_id = interaction_data.get("practice_id")
     if practice_id and history_messages:
@@ -103,7 +86,7 @@ async def question_condition_workflow(
     history_messages: list[InteractionMessage],
     interaction_data: dict,
     model: BaseChatModel,
-    sheets_service: Optional[GoogleSheetsService],
+    _sheets_service: Optional[GoogleSheetsService],
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
     langchain_messages = get_langchain_history(history_messages)
     tool_results = await call_single_tool(
@@ -122,7 +105,7 @@ async def provide_condition_information_workflow(
     history_messages: list[InteractionMessage],
     interaction_data: dict,
     model: BaseChatModel,
-    sheets_service: Optional[GoogleSheetsService],
+    _sheets_service: Optional[GoogleSheetsService],
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
     context = f"{INSTRUCTION_ANSWER_ABOUT_CONDITION}\n\n{CONDITIONS_DATA}"
     response_text = await generate_response_text(
@@ -141,7 +124,7 @@ async def frustrated_customer_workflow(
     history_messages: list[InteractionMessage],
     interaction_data: dict,
     model: BaseChatModel,
-    sheets_service: Optional[GoogleSheetsService],
+    _sheets_service: Optional[GoogleSheetsService],
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
     return await _send_message(
         history_messages,
@@ -156,7 +139,7 @@ async def out_of_scope_workflow(
     history_messages: list[InteractionMessage],
     interaction_data: dict,
     model: BaseChatModel,
-    sheets_service: Optional[GoogleSheetsService],
+    _sheets_service: Optional[GoogleSheetsService],
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
     return await _send_message(
         history_messages,
@@ -168,10 +151,10 @@ async def out_of_scope_workflow(
 
 
 async def reply_from_embeddings_workflow(
-    history_messages: list[InteractionMessage],
+    _history_messages: list[InteractionMessage],
     interaction_data: dict,
-    model: BaseChatModel,
-    sheets_service: Optional[GoogleSheetsService],
+    _model: BaseChatModel,
+    _sheets_service: Optional[GoogleSheetsService],
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
     response = interaction_data.pop("embeddings_response", "I am not sure how to answer that, can you rephrase?")
     return (
@@ -186,7 +169,7 @@ async def recommended_doctor_workflow(
     history_messages: list[InteractionMessage],
     interaction_data: dict,
     model: BaseChatModel,
-    sheets_service: Optional[GoogleSheetsService],
+    _sheets_service: Optional[GoogleSheetsService],
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
     langchain_messages = get_langchain_history(history_messages)
     tool_results = await call_single_tool(
@@ -217,7 +200,7 @@ async def customer_acknowledges_workflow(
     history_messages: list[InteractionMessage],
     interaction_data: dict,
     model: BaseChatModel,
-    sheets_service: Optional[GoogleSheetsService],
+    _sheets_service: Optional[GoogleSheetsService],
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
     return await _send_message(
         history_messages,
@@ -225,7 +208,6 @@ async def customer_acknowledges_workflow(
         ACKNOWLEDGMENT_MESSAGE,
         ChatflowState.AWAITING_NEW_MESSAGE,
         interaction_data,
-        add_acknowledgment=False,
     )
 
 
@@ -234,7 +216,7 @@ async def condition_not_treated_workflow(
     history_messages: list[InteractionMessage],
     interaction_data: dict,
     model: BaseChatModel,
-    sheets_service: Optional[GoogleSheetsService],
+    _sheets_service: Optional[GoogleSheetsService],
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
     return await _send_message(
         history_messages,
@@ -249,7 +231,7 @@ async def event_question_workflow(
     history_messages: list[InteractionMessage],
     interaction_data: dict,
     model: BaseChatModel,
-    sheets_service: Optional[GoogleSheetsService],
+    _sheets_service: Optional[GoogleSheetsService],
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
     response_text = await generate_response_text(
         history_messages,
@@ -269,7 +251,7 @@ async def general_faq_question_workflow(
     history_messages: list[InteractionMessage],
     interaction_data: dict,
     model: BaseChatModel,
-    sheets_service: Optional[GoogleSheetsService],
+    _sheets_service: Optional[GoogleSheetsService],
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
     response_text = await generate_response_text(
         history_messages,
@@ -289,7 +271,7 @@ async def emergency_workflow(
     history_messages: list[InteractionMessage],
     interaction_data: dict,
     model: BaseChatModel,
-    sheets_service: Optional[GoogleSheetsService],
+    _sheets_service: Optional[GoogleSheetsService],
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
     return await _send_message(
         history_messages,
@@ -304,7 +286,7 @@ async def answer_insurance_workflow(
     history_messages: list[InteractionMessage],
     interaction_data: dict,
     model: BaseChatModel,
-    sheets_service: Optional[GoogleSheetsService],
+    _sheets_service: Optional[GoogleSheetsService],
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
     return await _send_message(
         history_messages,
@@ -319,7 +301,7 @@ async def answer_pricey_service_workflow(
     history_messages: list[InteractionMessage],
     interaction_data: dict,
     model: BaseChatModel,
-    sheets_service: Optional[GoogleSheetsService],
+    _sheets_service: Optional[GoogleSheetsService],
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
     return await _send_message(
         history_messages,
@@ -334,7 +316,7 @@ async def answer_in_person_workflow(
     history_messages: list[InteractionMessage],
     interaction_data: dict,
     model: BaseChatModel,
-    sheets_service: Optional[GoogleSheetsService],
+    _sheets_service: Optional[GoogleSheetsService],
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
     return await _send_message(
         history_messages,
@@ -349,7 +331,7 @@ async def validate_state_workflow(
     history_messages: list[InteractionMessage],
     interaction_data: dict,
     model: BaseChatModel,
-    sheets_service: Optional[GoogleSheetsService],
+    _sheets_service: Optional[GoogleSheetsService],
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
     langchain_messages = get_langchain_history(history_messages)
     tool_results = await call_single_tool(
@@ -373,7 +355,7 @@ async def offer_book_call_workflow(
     history_messages: list[InteractionMessage],
     interaction_data: dict,
     model: BaseChatModel,
-    sheets_service: Optional[GoogleSheetsService],
+    _sheets_service: Optional[GoogleSheetsService],
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
     return await _send_message(
         history_messages,
@@ -385,10 +367,10 @@ async def offer_book_call_workflow(
 
 
 async def await_new_message_workflow(
-    history_messages: list[InteractionMessage],
+    _history_messages: list[InteractionMessage],
     interaction_data: dict,
-    model: BaseChatModel,
-    sheets_service: Optional[GoogleSheetsService],
+    _model: BaseChatModel,
+    _sheets_service: Optional[GoogleSheetsService],
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
     # This state loops back to intent classification for a new user query
     return [], ChatflowState.CLASSIFYING_INTENT, None, interaction_data
@@ -398,7 +380,7 @@ async def await_book_call_response_workflow(
     history_messages: list[InteractionMessage],
     interaction_data: dict,
     model: BaseChatModel,
-    sheets_service: Optional[GoogleSheetsService],
+    _sheets_service: Optional[GoogleSheetsService],
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
     langchain_messages = get_langchain_history(history_messages)
     tool_results = await call_single_tool(
@@ -417,7 +399,7 @@ async def book_call_declined_workflow(
     history_messages: list[InteractionMessage],
     interaction_data: dict,
     model: BaseChatModel,
-    sheets_service: Optional[GoogleSheetsService],
+    _sheets_service: Optional[GoogleSheetsService],
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
     full_message = f"{PROMPT_PROVIDE_CONTACT_INFO}\n\n{PROMPT_OFFER_NEWSLETTER}"
     return await _send_message(
@@ -433,7 +415,7 @@ async def book_call_link_accepted_workflow(
     history_messages: list[InteractionMessage],
     interaction_data: dict,
     model: BaseChatModel,
-    sheets_service: Optional[GoogleSheetsService],
+    _sheets_service: Optional[GoogleSheetsService],
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
     langchain_messages = get_langchain_history(history_messages)
     tool_results = await call_single_tool(
@@ -446,8 +428,7 @@ async def book_call_link_accepted_workflow(
     doctor_recommendation = interaction_data.pop("doctor_recommendation_response", "")
 
     # Generate a friendly response including the link and the newsletter offer
-    context_parts = []
-    context_parts.append("Create a natural, cohesive response that:")
+    context_parts = ["Create a natural, cohesive response that:"]
 
     if condition_info:
         context_parts.append(f"- Incorporates this condition information: {condition_info}")
@@ -493,7 +474,6 @@ async def book_call_link_accepted_workflow(
         full_message,
         ChatflowState.AWAITING_NEWSLETTER_RESPONSE,
         interaction_data,
-        add_acknowledgment=False,
     )
 
 
@@ -501,7 +481,7 @@ async def await_newsletter_response_workflow(
     history_messages: list[InteractionMessage],
     interaction_data: dict,
     model: BaseChatModel,
-    sheets_service: Optional[GoogleSheetsService],
+    _sheets_service: Optional[GoogleSheetsService],
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
     langchain_messages = get_langchain_history(history_messages)
     tool_results = await call_single_tool(
@@ -553,10 +533,10 @@ async def mailing_list_accepted_workflow(
 
 
 async def final_workflow(
-    history_messages: list[InteractionMessage],
+    _history_messages: list[InteractionMessage],
     interaction_data: dict,
-    model: BaseChatModel,
-    sheets_service: Optional[GoogleSheetsService],
+    _model: BaseChatModel,
+    _sheets_service: Optional[GoogleSheetsService],
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
     # This state is terminal, it does not produce any message and keeps the same state.
     return [], ChatflowState.FINAL, None, interaction_data
@@ -568,16 +548,16 @@ async def mailing_list_declined_workflow(
     model: BaseChatModel,
     sheets_service: Optional[GoogleSheetsService],
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
-    acknowledgment = await generate_response_text(
+    context = "Acknowledge that the user has declined the newsletter offer and provide a friendly farewell."
+    full_message = await generate_response_text(
         history_messages,
         model,
         system_prompt=CHATFLOW_SYSTEM_PROMPT,
-        context=INSTRUCTION_FOR_ACKNOWLEDGEMENT,
+        context=context,
     )
-    if acknowledgment and acknowledgment.strip():
-        full_message = f"{acknowledgment}\n\n{PROMPT_FAREWELL_MESSAGE}"
-    else:
-        # Fallback if acknowledgment generation fails or is empty
+
+    if not full_message or not full_message.strip():
+        # Fallback if generation fails or is empty
         full_message = PROMPT_FAREWELL_MESSAGE
 
     response_message = InteractionMessage(
