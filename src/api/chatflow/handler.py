@@ -13,7 +13,7 @@ STATES_AWAITING_USER_INPUT = {
     ChatflowState.VALIDATE_STATE,
     ChatflowState.AWAITING_BOOK_CALL_OFFER_RESPONSE,
     ChatflowState.AWAITING_NEWSLETTER_RESPONSE,
-    ChatflowState.REQUEST_RESOLVED_AWAIT_NEW_MESSAGE,
+    ChatflowState.AWAITING_NEW_MESSAGE,
 }
 
 
@@ -44,7 +44,7 @@ async def handle_chatflow(
         ChatflowState.INVALID_REQUEST_EMERGENCY: emergency_workflow,
         ChatflowState.VALIDATE_STATE: validate_state_workflow,
         ChatflowState.OFFER_BOOK_CALL: offer_book_call_workflow,
-        ChatflowState.REQUEST_RESOLVED_AWAIT_NEW_MESSAGE: request_resolved_workflow,
+        ChatflowState.AWAITING_NEW_MESSAGE: await_new_message_workflow,
         ChatflowState.AWAITING_BOOK_CALL_OFFER_RESPONSE: await_book_call_response_workflow,
         ChatflowState.BOOK_CALL_OFFER_DECLINED: book_call_declined_workflow,
         ChatflowState.BOOK_CALL_OFFER_ACCEPTED: book_call_link_accepted_workflow,

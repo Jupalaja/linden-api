@@ -176,7 +176,7 @@ async def reply_from_embeddings_workflow(
     response = interaction_data.pop("embeddings_response", "I am not sure how to answer that, can you rephrase?")
     return (
         [InteractionMessage(role=InteractionType.MODEL, message=response)],
-        ChatflowState.REQUEST_RESOLVED_AWAIT_NEW_MESSAGE,
+        ChatflowState.AWAITING_NEW_MESSAGE,
         None,
         interaction_data,
     )
@@ -223,7 +223,7 @@ async def customer_acknowledges_workflow(
         history_messages,
         model,
         ACKNOWLEDGMENT_MESSAGE,
-        ChatflowState.REQUEST_RESOLVED_AWAIT_NEW_MESSAGE,
+        ChatflowState.AWAITING_NEW_MESSAGE,
         interaction_data,
         add_acknowledgment=False,
     )
@@ -240,7 +240,7 @@ async def condition_not_treated_workflow(
         history_messages,
         model,
         PROMPT_CONDITION_NOT_TREATED,
-        ChatflowState.REQUEST_RESOLVED_AWAIT_NEW_MESSAGE,
+        ChatflowState.AWAITING_NEW_MESSAGE,
         interaction_data,
     )
 
@@ -259,7 +259,7 @@ async def event_question_workflow(
     )
     return (
         [InteractionMessage(role=InteractionType.MODEL, message=response_text)],
-        ChatflowState.REQUEST_RESOLVED_AWAIT_NEW_MESSAGE,
+        ChatflowState.AWAITING_NEW_MESSAGE,
         None,
         interaction_data,
     )
@@ -279,7 +279,7 @@ async def general_faq_question_workflow(
     )
     return (
         [InteractionMessage(role=InteractionType.MODEL, message=response_text)],
-        ChatflowState.REQUEST_RESOLVED_AWAIT_NEW_MESSAGE,
+        ChatflowState.AWAITING_NEW_MESSAGE,
         None,
         interaction_data,
     )
@@ -295,7 +295,7 @@ async def emergency_workflow(
         history_messages,
         model,
         OUTPUT_MESSAGE_EMERGENCY,
-        ChatflowState.REQUEST_RESOLVED_AWAIT_NEW_MESSAGE,
+        ChatflowState.AWAITING_NEW_MESSAGE,
         interaction_data,
     )
 
@@ -310,7 +310,7 @@ async def answer_insurance_workflow(
         history_messages,
         model,
         PROMPT_QUESTION_INSURANCE,
-        ChatflowState.REQUEST_RESOLVED_AWAIT_NEW_MESSAGE,
+        ChatflowState.AWAITING_NEW_MESSAGE,
         interaction_data,
     )
 
@@ -325,7 +325,7 @@ async def answer_pricey_service_workflow(
         history_messages,
         model,
         PROMPT_QUESTION_PRICEY_SERVICE,
-        ChatflowState.REQUEST_RESOLVED_AWAIT_NEW_MESSAGE,
+        ChatflowState.AWAITING_NEW_MESSAGE,
         interaction_data,
     )
 
@@ -340,7 +340,7 @@ async def answer_in_person_workflow(
         history_messages,
         model,
         PROMPT_QUESTION_IN_PERSON,
-        ChatflowState.REQUEST_RESOLVED_AWAIT_NEW_MESSAGE,
+        ChatflowState.AWAITING_NEW_MESSAGE,
         interaction_data,
     )
 
@@ -364,7 +364,7 @@ async def validate_state_workflow(
             history_messages,
             model,
             PROMPT_INVALID_STATE,
-            ChatflowState.REQUEST_RESOLVED_AWAIT_NEW_MESSAGE,
+            ChatflowState.AWAITING_NEW_MESSAGE,
             interaction_data,
         )
 
@@ -384,7 +384,7 @@ async def offer_book_call_workflow(
     )
 
 
-async def request_resolved_workflow(
+async def await_new_message_workflow(
     history_messages: list[InteractionMessage],
     interaction_data: dict,
     model: BaseChatModel,
