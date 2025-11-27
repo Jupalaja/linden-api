@@ -87,7 +87,6 @@ async def intent_classification_workflow(
         "is_potential_patient": ChatflowState.VALIDATE_STATE,
         "is_question_about_condition": ChatflowState.INTENT_QUESTION_CONDITION,
         "is_question_event": ChatflowState.INTENT_EVENT_QUESTION,
-        "is_frequently_asked_question": ChatflowState.INTENT_FAQ,
         "is_out_of_scope_question": ChatflowState.INTENT_OUT_OF_SCOPE_QUESTION,
         "is_frustrated_needs_human": ChatflowState.INTENT_FRUSTRATED_CUSTOMER,
         "is_acknowledgment": ChatflowState.CUSTOMER_ACKNOWLEDGES_RESPONSE,
@@ -228,31 +227,6 @@ async def customer_acknowledges_workflow(
     )
 
 
-async def faq_workflow(
-    history_messages: list[InteractionMessage],
-    interaction_data: dict,
-    model: BaseChatModel,
-    sheets_service: Optional[GoogleSheetsService],
-) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
-    langchain_messages = get_langchain_history(history_messages)
-    tool_results = await call_single_tool(
-        langchain_messages, model, classify_faq, CHATFLOW_SYSTEM_PROMPT, context=FAQ_DATA
-    )
-
-    intent = tool_results.get("classify_faq")
-
-    state_map = {
-        "is_question_in_person": ChatflowState.ANSWER_QUESTION_IN_PERSON,
-        "is_question_insurance": ChatflowState.ANSWER_QUESTION_INSURANCE,
-        "is_service_pricey": ChatflowState.ANSWER_QUESTION_PRICEY_SERVICE,
-        "is_general_faq_question": ChatflowState.PROVIDED_FAQ_INFORMATION,
-    }
-    next_state = state_map.get(
-        intent, ChatflowState.PROVIDED_FAQ_INFORMATION
-    )  # Fallback to faq-information
-    return [], next_state, None, interaction_data
-
-
 
 async def condition_not_treated_workflow(
     history_messages: list[InteractionMessage],
@@ -280,24 +254,6 @@ async def event_question_workflow(
         model,
         CHATFLOW_SYSTEM_PROMPT,
         context=EVENTS_DATA,
-    )
-    return (
-        [InteractionMessage(role=InteractionType.MODEL, message=response_text)],
-        ChatflowState.REQUEST_RESOLVED_AWAIT_NEW_MESSAGE,
-        None,
-        interaction_data,
-    )
-
-
-async def provided_faq_workflow(
-    history_messages: list[InteractionMessage],
-    interaction_data: dict,
-    model: BaseChatModel,
-    sheets_service: Optional[GoogleSheetsService],
-) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
-    context = f"{INSTRUCTION_GENERAL_FAQ_QUESTION}\n\n{FAQ_DATA}"
-    response_text = await generate_response_text(
-        history_messages, model, CHATFLOW_SYSTEM_PROMPT, context=context
     )
     return (
         [InteractionMessage(role=InteractionType.MODEL, message=response_text)],

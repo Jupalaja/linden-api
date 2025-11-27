@@ -7,17 +7,9 @@ ConversationType = Literal[
     "is_potential_patient",
     "is_question_about_condition",
     "is_question_event",
-    "is_frequently_asked_question",
     "is_out_of_scope_question",
     "is_frustrated_needs_human",
     "is_acknowledgment",
-]
-
-QuestionType = Literal[
-    "is_question_in_person",
-    "is_question_insurance",
-    "is_service_pricey",
-    "is_general_faq_question",
 ]
 
 
@@ -30,7 +22,6 @@ def classify_intent(intent: ConversationType) -> ConversationType:
     - is_potential_patient: User explicitly asks to become a patient, book an appointment, or sends a simple greeting like "Hi" or "Hello." Use this for direct requests like "I want to book an appointment," "How do I become a patient?," "I'd like to book a call" or "I'd like to work with one of your doctors." Do NOT use for general service inquiries
     - is_question_about_condition: User asks if specific health conditions are treated or mentions symptoms
     - is_question_event: User asks about scheduling, availability, hours, or appointment logistics
-    - is_frequently_asked_question: User asks a general question about services, pricing, insurance, location, or other common topics. Use this for inquiries like "What do you offer?," "Tell me about your services," or "Do you take insurance?".
     - is_out_of_scope_question: User asks about services not offered (pregnancy care, pediatrics under 6, severe psychiatric conditions, etc.)
     - is_frustrated_needs_human: User expresses frustration, wants to speak to a person, or is dissatisfied with bot responses
     - is_acknowledgment: User says thanks, goodbye, or acknowledges information provided
@@ -61,21 +52,6 @@ def is_valid_state(is_valid: bool) -> bool:
     """
     return is_valid
 
-
-@tool
-def classify_faq(questionType: QuestionType) -> QuestionType:
-    """Classifies the user's frequently asked question type. Call this function with the most relevant classification.
-
-    Question Types:
-    - is_question_in_person: User asks about in-person visits, location, or physical office availability
-    - is_question_insurance: User asks about insurance coverage, superbills, HSA/FSA, or payment methods
-    - is_service_pricey: User expresses concern about cost, asks about affordability, payment plans, or pricing
-    - is_general_faq_question: User asks other common questions about services, doctors, telehealth, or general practice information
-
-    Args:
-        questionType: The user's FAQ question type classification.
-    """
-    return questionType
 
 
 @tool
