@@ -31,8 +31,6 @@ async def handle_chatflow(
 
     workflow_map = {
         ChatflowState.IDLE: idle_workflow,
-        ChatflowState.ASK_USER_DATA: ask_user_data_workflow,
-        ChatflowState.GET_USER_DATA: get_user_data_workflow,
         ChatflowState.CLASSIFYING_INTENT: intent_classification_workflow,
         ChatflowState.INTENT_QUESTION_CONDITION: question_condition_workflow,
         ChatflowState.PROVIDE_CONDITION_INFORMATION: provide_condition_information_workflow,

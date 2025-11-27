@@ -62,82 +62,6 @@ async def idle_workflow(
     )
 
 
-async def ask_user_data_workflow(
-    history_messages: list[InteractionMessage],
-    interaction_data: dict,
-    model: BaseChatModel,
-    sheets_service: Optional[GoogleSheetsService],
-) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
-    condition_info = interaction_data.pop("condition_info_response", "")
-    doctor_recommendation = interaction_data.pop("doctor_recommendation_response", "")
-
-    # Generate a cohesive response that combines condition info, doctor recommendation, and user data request
-    context_parts = []
-    context_parts.append("The user has asked about a condition. Create a natural, cohesive response that:")
-    
-    if condition_info:
-        context_parts.append(f"- Incorporates this condition information: {condition_info}")
-    
-    if doctor_recommendation:
-        context_parts.append(f"- Incorporates this doctor recommendation: {doctor_recommendation}")
-    
-    context_parts.append(f"- Asks for their information naturally: {PROMPT_ASK_USER_DATA}")
-    context_parts.append("\nCreate a single, flowing response that feels natural and cohesive, not like separate pieces stitched together.")
-
-    context = "\n".join(context_parts)
-
-    full_message = await generate_response_text(
-        history_messages,
-        model,
-        system_prompt=CHATFLOW_SYSTEM_PROMPT,
-        context=context,
-    )
-
-    if not full_message:
-        # Fallback if generation fails
-        message_parts = []
-        if condition_info:
-            message_parts.append(condition_info)
-        if doctor_recommendation:
-            message_parts.append(doctor_recommendation)
-        message_parts.append(PROMPT_ASK_USER_DATA)
-        full_message = "\n\n".join(message_parts)
-
-    return await _send_message(
-        history_messages,
-        model,
-        full_message,
-        ChatflowState.GET_USER_DATA,
-        interaction_data,
-        add_acknowledgment=False,
-    )
-
-
-async def get_user_data_workflow(
-    history_messages: list[InteractionMessage],
-    interaction_data: dict,
-    model: BaseChatModel,
-    sheets_service: Optional[GoogleSheetsService],
-) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
-    langchain_messages = get_langchain_history(history_messages)
-    tool_results = await call_single_tool(
-        langchain_messages, model, get_user_data, CHATFLOW_SYSTEM_PROMPT
-    )
-
-    user_data = tool_results.get("get_user_data")
-    if user_data:
-        interaction_data = interaction_data.copy()
-        if "user_data" in interaction_data and isinstance(
-            interaction_data["user_data"], dict
-        ):
-            interaction_data["user_data"] = interaction_data["user_data"].copy()
-            interaction_data["user_data"].update(user_data)
-        else:
-            interaction_data["user_data"] = user_data
-
-    return [], ChatflowState.VALIDATE_STATE, None, interaction_data
-
-
 async def intent_classification_workflow(
     history_messages: list[InteractionMessage],
     interaction_data: dict,
@@ -160,7 +84,7 @@ async def intent_classification_workflow(
 
     state_map = {
         "is_emergency": ChatflowState.INVALID_REQUEST_EMERGENCY,
-        "is_potential_patient": ChatflowState.ASK_USER_DATA,
+        "is_potential_patient": ChatflowState.VALIDATE_STATE,
         "is_question_about_condition": ChatflowState.INTENT_QUESTION_CONDITION,
         "is_question_event": ChatflowState.INTENT_EVENT_QUESTION,
         "is_frequently_asked_question": ChatflowState.INTENT_FAQ,
@@ -282,7 +206,7 @@ async def recommended_doctor_workflow(
 
     return (
         [],
-        ChatflowState.ASK_USER_DATA,
+        ChatflowState.VALIDATE_STATE,
         None,
         interaction_data,
     )
@@ -538,15 +462,28 @@ async def book_call_link_accepted_workflow(
         langchain_messages, model, send_book_call_link, CHATFLOW_SYSTEM_PROMPT
     )
     # The send_book_call_link tool returns the message to send
-    response_text = tool_results.get("send_book_call_link")
+    booking_link_text = tool_results.get("send_book_call_link")
+
+    condition_info = interaction_data.pop("condition_info_response", "")
+    doctor_recommendation = interaction_data.pop("doctor_recommendation_response", "")
 
     # Generate a friendly response including the link and the newsletter offer
-    context = (
-        f"The user has agreed to book a call. Create a response that includes:\n"
-        f"- A brief acknowledgment.\n"
-        f"- This booking info: {response_text}\n"
-        f"- This newsletter offer: {PROMPT_OFFER_NEWSLETTER}"
-    )
+    context_parts = []
+    context_parts.append("Create a natural, cohesive response that:")
+
+    if condition_info:
+        context_parts.append(f"- Incorporates this condition information: {condition_info}")
+
+    if doctor_recommendation:
+        context_parts.append(f"- Incorporates this doctor recommendation: {doctor_recommendation}")
+
+    if booking_link_text:
+        context_parts.append(f"- Includes this booking information: {booking_link_text}")
+
+    context_parts.append(f"- Includes this newsletter offer: {PROMPT_OFFER_NEWSLETTER}")
+    context_parts.append(
+        "\nCreate a single, flowing response. If no specific context (like condition info) is available, just provide a welcoming message before the booking link and newsletter offer.")
+    context = "\n".join(context_parts)
 
     full_message = await generate_response_text(
         history_messages,
@@ -556,7 +493,21 @@ async def book_call_link_accepted_workflow(
     )
 
     if not full_message:
-        full_message = f"{response_text}\n\n{PROMPT_OFFER_NEWSLETTER}"
+        # Fallback if generation fails
+        message_parts = []
+        if condition_info:
+            message_parts.append(condition_info)
+        if doctor_recommendation:
+            message_parts.append(doctor_recommendation)
+
+        # Add a general greeting if no specific info is present
+        if not message_parts:
+            message_parts.append("Great! I can help with that.")
+
+        if booking_link_text:
+            message_parts.append(booking_link_text)
+        message_parts.append(PROMPT_OFFER_NEWSLETTER)
+        full_message = "\n\n".join(message_parts)
 
     return await _send_message(
         history_messages,
