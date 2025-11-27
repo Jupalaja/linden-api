@@ -1,5 +1,3 @@
-from typing import Optional
-
 from .workflows import *
 from src.services.google_sheets import GoogleSheetsService
 from src.shared.schemas import InteractionMessage
@@ -42,6 +40,7 @@ async def handle_chatflow(
         ChatflowState.CUSTOMER_ACKNOWLEDGES_RESPONSE: customer_acknowledges_workflow,
         ChatflowState.CONDITION_NOT_TREATED_SEND_CONTACT_INFO: condition_not_treated_workflow,
         ChatflowState.INTENT_EVENT_QUESTION: event_question_workflow,
+        ChatflowState.INTENT_GENERAL_FAQ_QUESTION: general_faq_question_workflow,
         ChatflowState.INVALID_REQUEST_EMERGENCY: emergency_workflow,
         ChatflowState.VALIDATE_STATE: validate_state_workflow,
         ChatflowState.OFFER_BOOK_CALL: offer_book_call_workflow,

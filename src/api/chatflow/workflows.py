@@ -77,8 +77,9 @@ async def intent_classification_workflow(
             return [], ChatflowState.REPLY_FROM_EMBEDDINGS, None, interaction_data
 
     langchain_messages = get_langchain_history(history_messages)
+    context = f"## Events Information\n{EVENTS_DATA}\n\n## FAQ Information\n{FAQ_DATA}"
     tool_results = await call_single_tool(
-        langchain_messages, model, classify_intent, CHATFLOW_SYSTEM_PROMPT
+        langchain_messages, model, classify_intent, CHATFLOW_SYSTEM_PROMPT, context
     )
     intent = tool_results.get("classify_intent")
 
@@ -87,6 +88,7 @@ async def intent_classification_workflow(
         "is_potential_patient": ChatflowState.VALIDATE_STATE,
         "is_question_about_condition": ChatflowState.INTENT_QUESTION_CONDITION,
         "is_question_event": ChatflowState.INTENT_EVENT_QUESTION,
+        "is_general_faq_question": ChatflowState.INTENT_GENERAL_FAQ_QUESTION,
         "is_out_of_scope_question": ChatflowState.INTENT_OUT_OF_SCOPE_QUESTION,
         "is_frustrated_needs_human": ChatflowState.INTENT_FRUSTRATED_CUSTOMER,
         "is_acknowledgment": ChatflowState.CUSTOMER_ACKNOWLEDGES_RESPONSE,
@@ -254,6 +256,26 @@ async def event_question_workflow(
         model,
         CHATFLOW_SYSTEM_PROMPT,
         context=EVENTS_DATA,
+    )
+    return (
+        [InteractionMessage(role=InteractionType.MODEL, message=response_text)],
+        ChatflowState.REQUEST_RESOLVED_AWAIT_NEW_MESSAGE,
+        None,
+        interaction_data,
+    )
+
+
+async def general_faq_question_workflow(
+    history_messages: list[InteractionMessage],
+    interaction_data: dict,
+    model: BaseChatModel,
+    sheets_service: Optional[GoogleSheetsService],
+) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
+    response_text = await generate_response_text(
+        history_messages,
+        model,
+        CHATFLOW_SYSTEM_PROMPT,
+        context=FAQ_DATA,
     )
     return (
         [InteractionMessage(role=InteractionType.MODEL, message=response_text)],
