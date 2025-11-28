@@ -32,7 +32,7 @@ async def handle_chatflow(
         ChatflowState.CLASSIFYING_INTENT: intent_classification_workflow,
         ChatflowState.INTENT_QUESTION_CONDITION: question_condition_workflow,
         ChatflowState.PROVIDE_CONDITION_INFORMATION: provide_condition_information_workflow,
-
+        ChatflowState.ASK_USER_DATA: ask_user_data_workflow,
         ChatflowState.INTENT_FRUSTRATED_CUSTOMER: frustrated_customer_workflow,
         ChatflowState.INTENT_OUT_OF_SCOPE_QUESTION: out_of_scope_workflow,
         ChatflowState.RECOMMENDED_DOCTOR: recommended_doctor_workflow,

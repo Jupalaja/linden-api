@@ -79,6 +79,15 @@ async def intent_classification_workflow(
     next_state = state_map.get(
         intent, ChatflowState.CLASSIFYING_INTENT
     )  # Fallback to re-classify
+
+    # Check if we need to capture user data (skip for emergency)
+    if next_state != ChatflowState.INVALID_REQUEST_EMERGENCY:
+        user_data = interaction_data.get("user_data", {})
+        data_refused = interaction_data.get("data_refused", False)
+        # If email is missing and user hasn't refused data collection, ask for it
+        if not user_data.get("email") and not data_refused:
+            return [], ChatflowState.ASK_USER_DATA, None, interaction_data
+
     return [], next_state, None, interaction_data
 
 
@@ -119,6 +128,48 @@ async def provide_condition_information_workflow(
         interaction_data,
     )
 
+async def ask_user_data_workflow(
+    history_messages: list[InteractionMessage],
+    interaction_data: dict,
+    model: BaseChatModel,
+    sheets_service: Optional[GoogleSheetsService],
+) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
+    langchain_messages = get_langchain_history(history_messages)
+    tool_results = await call_single_tool(
+        langchain_messages, model, get_user_data, CHATFLOW_SYSTEM_PROMPT
+    )
+    extracted_data = tool_results.get("get_user_data")
+
+    if extracted_data:
+        # Check for refusal
+        if extracted_data.get("name") == "REFUSED" or extracted_data.get("email") == "REFUSED":
+            interaction_data["data_refused"] = True
+            # Proceed to intent classification as if data collection is done (skipped)
+            return await intent_classification_workflow(
+                history_messages, interaction_data, model, sheets_service
+            )
+
+        # Merge extracted data
+        current_user_data = interaction_data.get("user_data", {})
+        if extracted_data.get("name"):
+            current_user_data["name"] = extracted_data["name"]
+        if extracted_data.get("email"):
+            current_user_data["email"] = extracted_data["email"]
+        interaction_data["user_data"] = current_user_data
+
+        # If we got data, we proceed to intent classification
+        return await intent_classification_workflow(
+            history_messages, interaction_data, model, sheets_service
+        )
+
+    # If no data extracted and no refusal, we ask the user
+    return await _send_message(
+        history_messages,
+        model,
+        PROMPT_ASK_USER_DATA,
+        ChatflowState.ASK_USER_DATA,
+        interaction_data,
+    )
 
 async def frustrated_customer_workflow(
     history_messages: list[InteractionMessage],
@@ -156,7 +207,7 @@ async def reply_from_embeddings_workflow(
     _model: BaseChatModel,
     _sheets_service: Optional[GoogleSheetsService],
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
-    response = interaction_data.pop("embeddings_response", "I am not sure how to answer that, can you rephrase?")
+    response = interaction_data.get("embeddings_response", "I am not sure how to answer that, can you rephrase?")
     return (
         [InteractionMessage(role=InteractionType.MODEL, message=response)],
         ChatflowState.AWAITING_NEW_MESSAGE,
@@ -424,8 +475,8 @@ async def book_call_link_accepted_workflow(
     # The send_book_call_link tool returns the message to send
     booking_link_text = tool_results.get("send_book_call_link")
 
-    condition_info = interaction_data.pop("condition_info_response", "")
-    doctor_recommendation = interaction_data.pop("doctor_recommendation_response", "")
+    condition_info = interaction_data.get("condition_info_response", "")
+    doctor_recommendation = interaction_data.get("doctor_recommendation_response", "")
 
     # Generate a friendly response including the link and the newsletter offer
     context_parts = ["Create a natural, cohesive response that:"]
