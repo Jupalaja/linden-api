@@ -164,9 +164,20 @@ async def ask_user_data_workflow(
         interaction_data["user_data"] = current_user_data
 
         # If we got data, we proceed to intent classification
-        return await intent_classification_workflow(
+        new_messages, new_state, tool_call, interaction_data = await intent_classification_workflow(
             history_messages, interaction_data, model, sheets_service
         )
+
+        if new_state == ChatflowState.ASK_USER_DATA:
+            return await _send_message(
+                history_messages,
+                model,
+                PROMPT_ASK_USER_DATA,
+                ChatflowState.ASK_USER_DATA,
+                interaction_data,
+            )
+
+        return new_messages, new_state, tool_call, interaction_data
 
     # If no data extracted and no refusal, we ask the user
     return await _send_message(

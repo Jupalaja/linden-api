@@ -172,11 +172,12 @@ def get_user_data(name: Optional[str] = None, email: Optional[str] = None) -> di
     """Extracts user's name and email ONLY if explicitly provided in the message.
 
     If the user explicitly provides their name or email, pass them as arguments.
-    If the user explicitly REFUSES to provide information (e.g. "No", "Skip"), pass name="REFUSED" and email="REFUSED".
+    If the user explicitly REFUSES to provide information (e.g. "No", "Skip"), pass name="" and email="".
 
     IMPORTANT:
     - Do NOT guess or hallucinate values.
     - Do NOT extract placeholders like "child's name" or "child's email".
+    - Do NOT extract names of doctors or other entities mentioned in the conversation context as the user's name.
     - If the user has NOT provided a name or email in this specific message, call this function with NO arguments.
 
     Args:
