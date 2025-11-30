@@ -167,10 +167,19 @@ def send_book_call_link() -> str:
 
 @tool
 def get_user_data(name: Optional[str] = None, email: Optional[str] = None) -> dict:
-    """Extracts user's name and email from their message.
-    If the user provides their name and/or email, use this tool to capture it.
-    If the user explicitly refuses to provide information (e.g. "No", "I don't want to", "Skip"), call this tool with name="REFUSED" and email="REFUSED".
-    If you are unsure or the information is not present in the current turn but wasn't explicitly refused, call it with no arguments.
+    """Extracts user's name and email ONLY if explicitly provided in the message.
+
+    If the user explicitly provides their name or email, pass them as arguments.
+    If the user explicitly REFUSES to provide information (e.g. "No", "Skip"), pass name="REFUSED" and email="REFUSED".
+
+    IMPORTANT:
+    - Do NOT guess or hallucinate values.
+    - Do NOT extract placeholders like "child's name" or "child's email".
+    - If the user has NOT provided a name or email in this specific message, call this function with NO arguments.
+
+    Args:
+        name: The user's name if provided.
+        email: The user's email if provided.
     """
     user_data = {}
     if name is not None:

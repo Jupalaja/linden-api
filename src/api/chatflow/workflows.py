@@ -20,6 +20,11 @@ from src.shared.utils.history import get_langchain_history
 logger = logging.getLogger(__name__)
 
 
+STATES_TO_SKIP_USER_DATA=[
+    ChatflowState.INVALID_REQUEST_EMERGENCY,
+    ChatflowState.INTENT_OUT_OF_SCOPE_QUESTION,
+]
+
 async def _send_message(
     _history_messages: list[InteractionMessage],
     _model: BaseChatModel,
@@ -80,8 +85,8 @@ async def intent_classification_workflow(
         intent, ChatflowState.CLASSIFYING_INTENT
     )  # Fallback to re-classify
 
-    # Check if we need to capture user data (skip for emergency)
-    if next_state != ChatflowState.INVALID_REQUEST_EMERGENCY:
+    # Check if we need to capture user data
+    if next_state not in STATES_TO_SKIP_USER_DATA:
         user_data = interaction_data.get("user_data", {})
         data_refused = interaction_data.get("data_refused", False)
         # If email is missing and user hasn't refused data collection, ask for it
@@ -192,11 +197,17 @@ async def out_of_scope_workflow(
     model: BaseChatModel,
     _sheets_service: Optional[GoogleSheetsService],
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
-    return await _send_message(
+    context = f"{PROMPT_OUT_OF_SCOPE_QUESTION}\n\n{FAQ_DATA}"
+    response_text = await generate_response_text(
         history_messages,
         model,
-        PROMPT_OUT_OF_SCOPE_QUESTION,
+        CHATFLOW_SYSTEM_PROMPT,
+        context=context,
+    )
+    return (
+        [InteractionMessage(role=InteractionType.MODEL, message=response_text)],
         ChatflowState.OFFER_BOOK_CALL,
+        None,
         interaction_data,
     )
 
