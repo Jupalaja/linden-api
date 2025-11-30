@@ -51,6 +51,7 @@ async def handle_chatflow(
         ChatflowState.AWAITING_NEWSLETTER_RESPONSE: await_newsletter_response_workflow,
         ChatflowState.MAILING_LIST_OFFER_ACCEPTED: mailing_list_accepted_workflow,
         ChatflowState.MAILING_LIST_OFFER_DECLINED: mailing_list_declined_workflow,
+        ChatflowState.INTENT_GOODBYE: goodbye_workflow,
         ChatflowState.FINAL: final_workflow,
     }
 

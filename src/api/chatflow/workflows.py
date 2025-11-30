@@ -80,6 +80,7 @@ async def intent_classification_workflow(
         "is_out_of_scope_question": ChatflowState.INTENT_OUT_OF_SCOPE_QUESTION,
         "is_frustrated_needs_human": ChatflowState.INTENT_FRUSTRATED_CUSTOMER,
         "is_acknowledgment": ChatflowState.CUSTOMER_ACKNOWLEDGES_RESPONSE,
+        "is_goodbye": ChatflowState.INTENT_GOODBYE,
     }
     next_state = state_map.get(
         intent, ChatflowState.CLASSIFYING_INTENT
@@ -588,7 +589,7 @@ async def mailing_list_accepted_workflow(
     # After saving, conversation can be considered idle/ended
     return (
         [response_message],
-        ChatflowState.FINAL,
+        ChatflowState.AWAITING_NEW_MESSAGE,
         None,
         interaction_data,
     )
@@ -635,7 +636,22 @@ async def mailing_list_declined_workflow(
 
     return (
         [response_message],
-        ChatflowState.FINAL,
+        ChatflowState.AWAITING_NEW_MESSAGE,
         None,
+        interaction_data,
+    )
+
+
+async def goodbye_workflow(
+    history_messages: list[InteractionMessage],
+    interaction_data: dict,
+    model: BaseChatModel,
+    _sheets_service: Optional[GoogleSheetsService],
+) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
+    return await _send_message(
+        history_messages,
+        model,
+        PROMPT_INTENT_GOODBYE,
+        ChatflowState.FINAL,
         interaction_data,
     )

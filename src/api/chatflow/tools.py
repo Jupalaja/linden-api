@@ -11,6 +11,7 @@ ConversationType = Literal[
     "is_out_of_scope_question",
     "is_frustrated_needs_human",
     "is_acknowledgment",
+    "is_goodbye",
 ]
 
 
@@ -27,6 +28,7 @@ def classify_intent(intent: ConversationType) -> ConversationType:
     - is_out_of_scope_question: User asks about services not offered (pregnancy care, pediatrics under 6, severe psychiatric conditions, etc.)
     - is_frustrated_needs_human: User expresses frustration, wants to speak to a person, or is dissatisfied with bot responses
     - is_acknowledgment: User says thanks, goodbye, or acknowledges information provided
+    - is_goodbye: User says goodbye or indicates the conversation is over.
 
     Args:
         intent: The user's intent classification.
