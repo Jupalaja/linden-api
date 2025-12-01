@@ -35,3 +35,4 @@ INSTRUCTION_CONDITION_NOT_TREATED="The user is asking about a condition that we 
 PROMPT_ASK_USER_DATA = "I'll be glad to assist you. Before we continue, who do I have the pleasure of speaking with? Could you also share your email address?"
 PROMPT_ADDED_TO_MAILING_LIST = "You've been added to our mailing list"
 PROMPT_INTENT_GOODBYE = "It was a pleasure assisting you. Have a great day!"
+INSTRUCTION_ACKNOWLEDGE_AND_ASK_USER_DATA = "The user has sent a message. Acknowledge it specifically and friendly (e.g., 'I can certainly check our hours for you', 'I can help with information about that condition'). Do NOT answer the question yet. Immediately after acknowledging, ask for their name and email address to assist them better."

@@ -183,11 +183,26 @@ async def ask_user_data_workflow(
         return new_messages, new_state, tool_call, interaction_data
 
     # If no data extracted and no refusal, we ask the user
-    return await _send_message(
+    response_text = await generate_response_text(
         history_messages,
         model,
-        PROMPT_ASK_USER_DATA,
+        CHATFLOW_SYSTEM_PROMPT,
+        context=INSTRUCTION_ACKNOWLEDGE_AND_ASK_USER_DATA,
+    )
+
+    if not response_text:
+        return await _send_message(
+            history_messages,
+            model,
+            PROMPT_ASK_USER_DATA,
+            ChatflowState.ASK_USER_DATA,
+            interaction_data,
+        )
+
+    return (
+        [InteractionMessage(role=InteractionType.MODEL, message=response_text)],
         ChatflowState.ASK_USER_DATA,
+        None,
         interaction_data,
     )
 
