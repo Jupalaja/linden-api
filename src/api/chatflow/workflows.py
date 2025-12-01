@@ -63,6 +63,8 @@ async def intent_classification_workflow(
         if found:
             interaction_data["embeddings_response"] = response
             return [], ChatflowState.REPLY_FROM_EMBEDDINGS, None, interaction_data
+        else:
+            interaction_data.pop("embeddings_response", None)
 
     langchain_messages = get_langchain_history(history_messages)
     context = f"## Events Information\n{EVENTS_DATA}\n\n## FAQ Information\n{FAQ_DATA}"
@@ -231,10 +233,9 @@ async def reply_from_embeddings_workflow(
     _model: BaseChatModel,
     _sheets_service: Optional[GoogleSheetsService],
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
-    response = interaction_data.get("embeddings_response", "I am not sure how to answer that, can you rephrase?")
     return (
-        [InteractionMessage(role=InteractionType.MODEL, message=response)],
-        ChatflowState.AWAITING_NEW_MESSAGE,
+        [],
+        ChatflowState.OFFER_BOOK_CALL,
         None,
         interaction_data,
     )
@@ -438,6 +439,19 @@ async def offer_book_call_workflow(
     model: BaseChatModel,
     _sheets_service: Optional[GoogleSheetsService],
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
+    embeddings_response = interaction_data.get("embeddings_response")
+
+    if embeddings_response:
+        interaction_data.get("embeddings_response")
+        message = f"{embeddings_response}\n\n{PROMPT_OFFER_BOOK_CALL}"
+        return await _send_message(
+            history_messages,
+            model,
+            message,
+            ChatflowState.AWAITING_BOOK_CALL_OFFER_RESPONSE,
+            interaction_data,
+        )
+
     return await _send_message(
         history_messages,
         model,
