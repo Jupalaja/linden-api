@@ -147,21 +147,21 @@ async def ask_user_data_workflow(
     extracted_data = tool_results.get("get_user_data")
 
     if extracted_data:
+        # Merge extracted data
+        current_user_data = interaction_data.get("user_data", {})
+        if "name" in extracted_data:
+            current_user_data["name"] = extracted_data["name"]
+        if "email" in extracted_data:
+            current_user_data["email"] = extracted_data["email"]
+        interaction_data["user_data"] = current_user_data
+
         # Check for refusal
-        if extracted_data.get("name") == "REFUSED" or extracted_data.get("email") == "REFUSED":
+        if extracted_data.get("name") == "" or extracted_data.get("email") == "":
             interaction_data["data_refused"] = True
             # Proceed to intent classification as if data collection is done (skipped)
             return await intent_classification_workflow(
                 history_messages, interaction_data, model, sheets_service
             )
-
-        # Merge extracted data
-        current_user_data = interaction_data.get("user_data", {})
-        if extracted_data.get("name"):
-            current_user_data["name"] = extracted_data["name"]
-        if extracted_data.get("email"):
-            current_user_data["email"] = extracted_data["email"]
-        interaction_data["user_data"] = current_user_data
 
         # If we got data, we proceed to intent classification
         new_messages, new_state, tool_call, interaction_data = await intent_classification_workflow(
