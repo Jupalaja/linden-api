@@ -21,15 +21,15 @@ def classify_intent(intent: ConversationType) -> ConversationType:
     """Classifies the user's intent based on their message. Call this function with the most relevant classification.
 
     Classifications:
-    - is_emergency: User mentions urgent medical situations, severe symptoms, or emergency care needs
-    - is_potential_patient: User explicitly asks to become a patient, book an appointment, or sends a simple greeting like "Hi" or "Hello." Use this for direct requests like "I want to book an appointment," "How do I become a patient?," "I'd like to book a call" or "I'd like to work with one of your doctors." Do NOT use for general service inquiries
-    - is_question_about_condition: User asks if specific health conditions are treated or mentions symptoms
+    - is_emergency: User mentions urgent medical situations, severe symptoms, or emergency care needs.
+    - is_potential_patient: User explicitly asks to become a patient, book an appointment, or sends a simple greeting like "Hi" or "Hello." Use this for direct requests like "I want to book an appointment," "How do I become a patient?," "I'd like to book a call," or "I'd like to work with one of your doctors." Do NOT use for general service inquiries.
+    - is_question_about_condition: User asks about specific health conditions (e.g., 'do you treat anxiety?'), mentions symptoms, or asks about treatments. This is for medical-related questions.
     - is_question_event: User asks about specific, scheduled events like the Sunflower Festival or Craniosacral Therapy Sessions.
-    - is_general_faq_question: User asks a general question about the clinic, such as its operating hours, pricing, insurance policies, or location.
-    - is_out_of_scope_question: User asks about services not offered (pregnancy care, pediatrics under 6, severe psychiatric conditions, etc.)
-    - is_frustrated_needs_human: User expresses frustration, wants to speak to a person, or is dissatisfied with bot responses
-    - is_acknowledgment: User says thanks, goodbye, or acknowledges information provided
-    - is_mailing_list: User expresses that wants to be added to the mailing list
+    - is_general_faq_question: User asks a general question about the clinic, its services, or its staff, and the answer is available in the provided context. This includes questions about operating hours, pricing, insurance policies or location.
+    - is_out_of_scope_question: User asks about services not offered (e.g., pregnancy care, pediatrics under 6) or asks a question for which information is not available in the context. If the question cannot be answered using the provided context, use this classification.
+    - is_frustrated_needs_human: User expresses frustration, wants to speak to a person, or is dissatisfied with bot responses.
+    - is_acknowledgment: User says thanks, goodbye, or acknowledges information provided.
+    - is_mailing_list: User expresses that wants to be added to the mailing list.
     - is_goodbye: User says goodbye or indicates the conversation is over.
 
     Args:

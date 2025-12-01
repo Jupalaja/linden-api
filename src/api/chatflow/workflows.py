@@ -23,6 +23,7 @@ logger = logging.getLogger(__name__)
 STATES_TO_SKIP_USER_DATA=[
     ChatflowState.INVALID_REQUEST_EMERGENCY,
     ChatflowState.INTENT_OUT_OF_SCOPE_QUESTION,
+    ChatflowState.INTENT_GENERAL_FAQ_QUESTION,
 ]
 
 async def _send_message(
@@ -350,11 +351,16 @@ async def general_faq_question_workflow(
     model: BaseChatModel,
     _sheets_service: Optional[GoogleSheetsService],
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
+    instruction = (
+        "Answer the user's question based on the provided context. "
+        f"If the answer is not found in the context, respond with the following message: '{OUTPUT_MESSAGE_ADVANCED_MEDICAL_QUESTION}'"
+    )
+    context = f"{instruction}\n\n{FAQ_DATA}"
     response_text = await generate_response_text(
         history_messages,
         model,
         CHATFLOW_SYSTEM_PROMPT,
-        context=FAQ_DATA,
+        context=context,
     )
     return (
         [InteractionMessage(role=InteractionType.MODEL, message=response_text)],
