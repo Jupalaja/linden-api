@@ -11,6 +11,7 @@ ConversationType = Literal[
     "is_out_of_scope_question",
     "is_frustrated_needs_human",
     "is_acknowledgment",
+    "is_mailing_list",
     "is_goodbye",
 ]
 
@@ -28,6 +29,7 @@ def classify_intent(intent: ConversationType) -> ConversationType:
     - is_out_of_scope_question: User asks about services not offered (pregnancy care, pediatrics under 6, severe psychiatric conditions, etc.)
     - is_frustrated_needs_human: User expresses frustration, wants to speak to a person, or is dissatisfied with bot responses
     - is_acknowledgment: User says thanks, goodbye, or acknowledges information provided
+    - is_mailing_list: User expresses that wants to be added to the mailing list
     - is_goodbye: User says goodbye or indicates the conversation is over.
 
     Args:
@@ -108,32 +110,6 @@ def user_accepts_book_call(user_accepts: bool) -> bool:
 
     Args:
         user_accepts: True if user wants to book discovery call, False if declining
-    """
-    return user_accepts
-
-
-@tool
-def user_accepts_newsletter(user_accepts: bool) -> bool:
-    """Use this tool to determine if the user accepts to join the newsletter mailing list.
-
-    The newsletter includes:
-    - Monthly health tips and seasonal wellness advice
-    - Nourishing recipes
-    - Hormone and mood support information
-    - Updates on retreats and new services (like upcoming biofeedback)
-    - Users can unsubscribe anytime
-
-    Look for responses like:
-    - "Yes, sign me up"
-    - "That sounds helpful"
-    - "I'd like that"
-    - "Sure"
-
-    Set user_accepts=True if they agree to join.
-    Set user_accepts=False if they decline or say "no thanks".
-
-    Args:
-        user_accepts: True if user wants to join newsletter, False if declining
     """
     return user_accepts
 

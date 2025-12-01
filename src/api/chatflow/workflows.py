@@ -81,6 +81,7 @@ async def intent_classification_workflow(
         "is_frustrated_needs_human": ChatflowState.INTENT_FRUSTRATED_CUSTOMER,
         "is_acknowledgment": ChatflowState.CUSTOMER_ACKNOWLEDGES_RESPONSE,
         "is_goodbye": ChatflowState.INTENT_GOODBYE,
+        "is_mailing_list": ChatflowState.INTENT_MAILING_LIST,
     }
     next_state = state_map.get(
         intent, ChatflowState.CLASSIFYING_INTENT
@@ -480,7 +481,7 @@ async def book_call_declined_workflow(
         history_messages,
         model,
         full_message,
-        ChatflowState.AWAITING_NEWSLETTER_RESPONSE,
+        ChatflowState.AWAITING_NEW_MESSAGE,
         interaction_data,
     )
 
@@ -546,45 +547,23 @@ async def book_call_link_accepted_workflow(
         history_messages,
         model,
         full_message,
-        ChatflowState.AWAITING_NEWSLETTER_RESPONSE,
+        ChatflowState.AWAITING_NEW_MESSAGE,
         interaction_data,
     )
 
 
-async def await_newsletter_response_workflow(
-    history_messages: list[InteractionMessage],
-    interaction_data: dict,
-    model: BaseChatModel,
-    _sheets_service: Optional[GoogleSheetsService],
-) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
-    langchain_messages = get_langchain_history(history_messages)
-    tool_results = await call_single_tool(
-        langchain_messages, model, user_accepts_newsletter, CHATFLOW_SYSTEM_PROMPT
-    )
-    accepts = tool_results.get("user_accepts_newsletter", False)
-    next_state = (
-        ChatflowState.MAILING_LIST_OFFER_ACCEPTED
-        if accepts
-        else ChatflowState.MAILING_LIST_OFFER_DECLINED
-    )
-    return [], next_state, None, interaction_data
-
-
-async def mailing_list_accepted_workflow(
+async def intent_mailing_list_workflow(
     history_messages: list[InteractionMessage],
     interaction_data: dict,
     model: BaseChatModel,
     sheets_service: Optional[GoogleSheetsService],
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
     langchain_messages = get_langchain_history(history_messages)
-    tool_results = await call_single_tool(
+    await call_single_tool(
         langchain_messages, model, save_to_mailing_list, CHATFLOW_SYSTEM_PROMPT
     )
-    # The save_to_mailing_list tool returns a confirmation message
-    response_text = tool_results.get(
-        "save_to_mailing_list", "Thank you for subscribing to our mailing list!"
-    )
-    full_message = f"{response_text}\n\n{PROMPT_FAREWELL_MESSAGE}"
+
+    full_message = PROMPT_ADDED_TO_MAILING_LIST
 
     response_message = InteractionMessage(
         role=InteractionType.MODEL, message=full_message
@@ -597,7 +576,6 @@ async def mailing_list_accepted_workflow(
         sheets_service=sheets_service,
     )
 
-    # After saving, conversation can be considered idle/ended
     return (
         [response_message],
         ChatflowState.AWAITING_NEW_MESSAGE,
@@ -614,43 +592,6 @@ async def final_workflow(
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
     # This state is terminal, it does not produce any message and keeps the same state.
     return [], ChatflowState.FINAL, None, interaction_data
-
-
-async def mailing_list_declined_workflow(
-    history_messages: list[InteractionMessage],
-    interaction_data: dict,
-    model: BaseChatModel,
-    sheets_service: Optional[GoogleSheetsService],
-) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
-    context = "Acknowledge that the user has declined the newsletter offer and provide a friendly farewell."
-    full_message = await generate_response_text(
-        history_messages,
-        model,
-        system_prompt=CHATFLOW_SYSTEM_PROMPT,
-        context=context,
-    )
-
-    if not full_message or not full_message.strip():
-        # Fallback if generation fails or is empty
-        full_message = PROMPT_FAREWELL_MESSAGE
-
-    response_message = InteractionMessage(
-        role=InteractionType.MODEL, message=full_message
-    )
-    full_conversation = history_messages + [response_message]
-
-    await write_candidato_a_empleo_to_sheet(
-        interaction_data=interaction_data,
-        conversation=full_conversation,
-        sheets_service=sheets_service,
-    )
-
-    return (
-        [response_message],
-        ChatflowState.AWAITING_NEW_MESSAGE,
-        None,
-        interaction_data,
-    )
 
 
 async def goodbye_workflow(

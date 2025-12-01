@@ -12,7 +12,6 @@ STATES_AWAITING_USER_INPUT = {
     ChatflowState.CLASSIFYING_INTENT,
     ChatflowState.VALIDATE_STATE,
     ChatflowState.AWAITING_BOOK_CALL_OFFER_RESPONSE,
-    ChatflowState.AWAITING_NEWSLETTER_RESPONSE,
     ChatflowState.AWAITING_NEW_MESSAGE,
 }
 
@@ -48,9 +47,7 @@ async def handle_chatflow(
         ChatflowState.AWAITING_BOOK_CALL_OFFER_RESPONSE: await_book_call_response_workflow,
         ChatflowState.BOOK_CALL_OFFER_DECLINED: book_call_declined_workflow,
         ChatflowState.BOOK_CALL_OFFER_ACCEPTED: book_call_link_accepted_workflow,
-        ChatflowState.AWAITING_NEWSLETTER_RESPONSE: await_newsletter_response_workflow,
-        ChatflowState.MAILING_LIST_OFFER_ACCEPTED: mailing_list_accepted_workflow,
-        ChatflowState.MAILING_LIST_OFFER_DECLINED: mailing_list_declined_workflow,
+        ChatflowState.INTENT_MAILING_LIST: intent_mailing_list_workflow,
         ChatflowState.INTENT_GOODBYE: goodbye_workflow,
         ChatflowState.FINAL: final_workflow,
     }
