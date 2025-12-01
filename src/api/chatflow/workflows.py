@@ -293,11 +293,17 @@ async def condition_not_treated_workflow(
     model: BaseChatModel,
     _sheets_service: Optional[GoogleSheetsService],
 ) -> tuple[list[InteractionMessage], ChatflowState, str | None, dict]:
-    return await _send_message(
+    context = f"{INSTRUCTION_CONDITION_NOT_TREATED}\n\n{CONDITIONS_DATA}"
+    response_text = await generate_response_text(
         history_messages,
         model,
-        PROMPT_CONDITION_NOT_TREATED,
+        CHATFLOW_SYSTEM_PROMPT,
+        context=context,
+    )
+    return (
+        [InteractionMessage(role=InteractionType.MODEL, message=response_text)],
         ChatflowState.AWAITING_NEW_MESSAGE,
+        None,
         interaction_data,
     )
 
