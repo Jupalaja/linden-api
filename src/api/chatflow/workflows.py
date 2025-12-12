@@ -540,6 +540,9 @@ async def book_call_link_accepted_workflow(
     # The send_book_call_link tool returns the message to send
     booking_link_text = tool_results.get("send_book_call_link")
 
+    if booking_link_text:
+        interaction_data["sent_book_call_link"] = True
+
     condition_info = interaction_data.get("condition_info_response", "")
     doctor_recommendation = interaction_data.get("doctor_recommendation_response", "")
 
